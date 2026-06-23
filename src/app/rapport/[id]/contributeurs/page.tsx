@@ -4,12 +4,11 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getReport, updateReport, ContributorStatus } from '@/lib/report-store'
 import { SECTION_CONTRIBUTORS } from '@/lib/mock-data'
-import StepTracker from '@/components/StepTracker'
 
-const STATUS_CONFIG: Record<ContributorStatus, { label: string; color: string; bg: string }> = {
-  pending: { label: 'En attente', color: 'text-stone-500', bg: 'bg-stone-100' },
-  in_progress: { label: 'En cours', color: 'text-amber-700', bg: 'bg-amber-100' },
-  complete: { label: 'Terminé', color: 'text-green-700', bg: 'bg-green-100' },
+const STATUS_CONFIG: Record<ContributorStatus, { label: string; color: string; bg: string; border: string }> = {
+  pending: { label: 'En attente', color: 'text-slate-500', bg: 'bg-slate-100', border: 'border-slate-200' },
+  in_progress: { label: 'En cours', color: 'text-amber-700', bg: 'bg-amber-50', border: 'border-amber-200' },
+  complete: { label: '✓ Terminé', color: 'text-emerald-700', bg: 'bg-emerald-50', border: 'border-emerald-200' },
 }
 
 export default function ContributeursPage() {
@@ -42,100 +41,95 @@ export default function ContributeursPage() {
     updateReport(id, { contributorNotes: updatedNotes })
   }
 
-  function handleContinue() {
-    updateReport(id, { status: 'photos' })
-    router.push(`/rapport/${id}/photos`)
-  }
-
   if (!ready) return null
 
   const completedCount = Object.values(statuses).filter(s => s === 'complete').length
-  const canContinue = completedCount >= 2
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4">
-        <StepTracker reportId={id} current="contributors" reached="contributors" />
-        <div>
-          <h1 className="text-2xl font-bold text-stone-900">Contributeurs</h1>
-          <p className="text-stone-600 mt-1">Chaque responsable de section contribue aux données de son activité.</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">Contributeurs 🙌</h1>
+        <p className="text-slate-500 mt-1">Chaque responsable contribue à sa section. Ensemble, le rapport se construit tout seul !</p>
       </div>
 
+      {/* Fun banner */}
+      {completedCount === 0 && (
+        <div className="bg-violet-50 border border-violet-100 rounded-2xl p-4 flex items-start gap-3">
+          <span className="text-2xl">🚀</span>
+          <div>
+            <p className="font-semibold text-violet-800">L&apos;union fait la force !</p>
+            <p className="text-violet-600 text-sm">Marquez les sections comme &quot;Terminé&quot; au fur et à mesure que vos responsables contribuent. Même une seule section suffit pour avancer.</p>
+          </div>
+        </div>
+      )}
+
+      {completedCount >= 2 && (
+        <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-start gap-3">
+          <span className="text-2xl">🎊</span>
+          <div>
+            <p className="font-semibold text-emerald-800">Incroyable, {completedCount} sections complétées !</p>
+            <p className="text-emerald-600 text-sm">Votre équipe assure. Vous pouvez passer à la suite quand vous voulez !</p>
+          </div>
+        </div>
+      )}
+
       {/* Progress */}
-      <div className="bg-white rounded-xl border border-stone-200 p-4">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-stone-700">{completedCount} / {SECTION_CONTRIBUTORS.length} sections complétées</span>
-          {canContinue ? (
-            <span className="text-sm text-green-600 font-medium flex items-center gap-1">✓ Prêt à continuer</span>
-          ) : (
-            <span className="text-xs text-stone-500">Minimum 2 sections requises</span>
-          )}
+      <div className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4">
+        <div className="flex-1 bg-slate-100 rounded-full h-3">
+          <div className="bg-indigo-500 h-3 rounded-full transition-all duration-500" style={{ width: `${(completedCount / SECTION_CONTRIBUTORS.length) * 100}%` }} />
         </div>
-        <div className="bg-stone-100 rounded-full h-2">
-          <div
-            className="bg-green-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${(completedCount / SECTION_CONTRIBUTORS.length) * 100}%` }}
-          />
-        </div>
+        <span className="text-sm font-bold text-slate-600 shrink-0">{completedCount} / {SECTION_CONTRIBUTORS.length}</span>
       </div>
 
       {/* Contributor cards */}
-      <div className="grid gap-4">
+      <div className="grid gap-3">
         {SECTION_CONTRIBUTORS.map(contrib => {
           const status = statuses[contrib.id] ?? 'pending'
           const cfg = STATUS_CONFIG[status]
           const isOpen = openSection === contrib.id
 
           return (
-            <div key={contrib.id} className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
-              <div className="p-5 flex items-center justify-between gap-4">
+            <div key={contrib.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${status === 'complete' ? 'border-emerald-200' : 'border-slate-200'}`}>
+              <button
+                onClick={() => setOpenSection(isOpen ? null : contrib.id)}
+                className="w-full p-5 flex items-center justify-between gap-4 text-left hover:bg-slate-50 transition-colors"
+              >
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">{contrib.icon}</span>
                   <div>
-                    <p className="font-semibold text-stone-800">{contrib.name}</p>
-                    <p className="text-sm text-stone-500">{contrib.leader}</p>
+                    <p className="font-semibold text-slate-800">{contrib.name}</p>
+                    <p className="text-sm text-slate-400">{contrib.leader}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs font-medium px-3 py-1 rounded-full ${cfg.bg} ${cfg.color}`}>
+                  <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
                     {cfg.label}
                   </span>
-                  <button
-                    onClick={() => setOpenSection(isOpen ? null : contrib.id)}
-                    className="text-sm text-green-700 hover:text-green-800 font-medium"
-                  >
-                    {isOpen ? 'Fermer' : 'Ouvrir'}
-                  </button>
+                  <span className="text-slate-300">{isOpen ? '▲' : '▼'}</span>
                 </div>
-              </div>
+              </button>
 
               {isOpen && (
-                <div className="border-t border-stone-100 p-5 bg-stone-50 space-y-4">
+                <div className="border-t border-slate-100 p-5 space-y-4 bg-slate-50">
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-1">
-                      Notes et informations de la section
-                    </label>
+                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">Notes de {contrib.leader.split(' ')[0]}</label>
                     <textarea
                       value={notes[contrib.id] ?? ''}
                       onChange={e => saveNote(contrib.id, e.target.value)}
-                      placeholder={`Résumé des activités de ${contrib.name.toLowerCase()}, faits marquants, chiffres clés...`}
+                      placeholder={`Résumé des activités, chiffres clés, moments marquants de ${contrib.name.toLowerCase()}…`}
                       rows={4}
-                      className="w-full border border-stone-200 rounded-lg p-3 text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-green-500 bg-white resize-none"
+                      className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white resize-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-stone-700 mb-2">Statut</label>
+                    <label className="block text-sm font-semibold text-slate-600 mb-2">Statut</label>
                     <div className="flex gap-2">
                       {(['pending', 'in_progress', 'complete'] as ContributorStatus[]).map(s => (
                         <button
                           key={s}
                           onClick={() => setStatus(contrib.id, s)}
-                          className={`flex-1 py-2 rounded-lg text-sm font-medium border transition-colors
-                            ${status === s
-                              ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color} border-current`
-                              : 'bg-white border-stone-200 text-stone-500 hover:border-stone-300'
-                            }`}
+                          className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all
+                            ${status === s ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color} ${STATUS_CONFIG[s].border}` : 'bg-white border-slate-200 text-slate-400 hover:border-slate-300'}`}
                         >
                           {STATUS_CONFIG[s].label}
                         </button>
@@ -149,13 +143,12 @@ export default function ContributeursPage() {
         })}
       </div>
 
-      <div className="flex justify-end pt-2">
+      <div className="flex justify-end">
         <button
-          onClick={handleContinue}
-          disabled={!canContinue}
-          className="bg-green-700 hover:bg-green-800 disabled:bg-stone-300 disabled:cursor-not-allowed text-white font-semibold px-8 py-3 rounded-xl transition-colors"
+          onClick={() => router.push(`/rapport/${id}/photos`)}
+          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors"
         >
-          Continuer vers les photos →
+          Aller aux photos →
         </button>
       </div>
     </div>

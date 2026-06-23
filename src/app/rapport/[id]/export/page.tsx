@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getReport, Report } from '@/lib/report-store'
 import { DEMO_ASSOCIATION } from '@/lib/mock-data'
-import StepTracker from '@/components/StepTracker'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -16,40 +15,41 @@ function ReportPreview({ report }: { report: Report }) {
   const featuredPhotos = report.photos.filter(p => p.featured)
 
   return (
-    <div id="rapport-print" className="bg-white text-stone-900 max-w-3xl mx-auto">
+    <div id="rapport-print" className="bg-white text-slate-900 max-w-3xl mx-auto font-sans">
       {/* Cover */}
-      <div className="text-center py-20 px-8 border-b-4 border-green-700">
+      <div className="text-center py-20 px-8 bg-indigo-700 text-white">
         <div className="text-7xl mb-6">🌱</div>
-        <h1 className="text-4xl font-bold text-green-800 mb-2">{data.name}</h1>
-        <p className="text-xl text-stone-600 mb-1">Rapport d&apos;activité {report.year}</p>
-        <p className="text-stone-500 text-sm">Assemblée générale du {formatDate(report.agmDate)}</p>
+        <h1 className="text-4xl font-bold mb-3">{data.name}</h1>
+        <p className="text-xl text-indigo-200 mb-2">Rapport d&apos;activité {report.year}</p>
+        <p className="text-indigo-300 text-sm">Assemblée générale du {formatDate(report.agmDate)}</p>
       </div>
 
       {/* Key figures */}
-      <div className="grid grid-cols-4 gap-0 border-b border-stone-200">
+      <div className="grid grid-cols-4 border-b border-slate-100">
         {[
-          { label: 'Membres', value: data.members.current },
-          { label: 'Bénévoles', value: data.volunteers.total },
-          { label: 'Événements', value: data.events.length },
-          { label: 'Participants', value: totalParticipants },
+          { label: 'Membres', value: data.members.current, icon: '👥' },
+          { label: 'Bénévoles', value: data.volunteers.total, icon: '🙌' },
+          { label: 'Événements', value: data.events.length, icon: '📅' },
+          { label: 'Participants', value: totalParticipants, icon: '🎯' },
         ].map(stat => (
-          <div key={stat.label} className="text-center p-6 border-r border-stone-200 last:border-r-0">
-            <p className="text-3xl font-bold text-green-700">{stat.value}</p>
-            <p className="text-sm text-stone-500 mt-1">{stat.label}</p>
+          <div key={stat.label} className="text-center p-6 border-r border-slate-100 last:border-r-0">
+            <div className="text-2xl mb-1">{stat.icon}</div>
+            <p className="text-3xl font-bold text-indigo-700">{stat.value.toLocaleString('fr-FR')}</p>
+            <p className="text-sm text-slate-400 mt-1">{stat.label}</p>
           </div>
         ))}
       </div>
 
       {/* Featured photos */}
       {featuredPhotos.length > 0 && (
-        <div className="p-8 border-b border-stone-200">
-          <h2 className="text-sm font-semibold text-stone-400 uppercase tracking-widest mb-4">L&apos;année en images</h2>
-          <div className="grid grid-cols-3 gap-3">
+        <div className="p-8 border-b border-slate-100">
+          <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">L&apos;année en images</h2>
+          <div className={`grid gap-3 ${featuredPhotos.length === 1 ? 'grid-cols-1' : featuredPhotos.length === 2 ? 'grid-cols-2' : 'grid-cols-3'}`}>
             {featuredPhotos.slice(0, 3).map(photo => (
-              <div key={photo.id} className="aspect-video rounded-lg overflow-hidden bg-stone-100">
+              <div key={photo.id} className="rounded-xl overflow-hidden bg-slate-100 aspect-video">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={photo.dataUrl} alt={photo.caption} className="w-full h-full object-cover" />
-                {photo.caption && <p className="text-xs text-stone-500 mt-1 text-center">{photo.caption}</p>}
+                {photo.caption && <p className="text-xs text-center text-slate-500 p-2 italic">{photo.caption}</p>}
               </div>
             ))}
           </div>
@@ -58,20 +58,21 @@ function ReportPreview({ report }: { report: Report }) {
 
       {/* Sections */}
       {report.sections.map(section => (
-        <div key={section.id} className="p-8 border-b border-stone-100">
-          <h2 className="text-2xl font-bold text-green-800 mb-4">{section.title}</h2>
-          <div className="text-stone-700 leading-relaxed space-y-3">
-            {section.content.split('\n').filter(Boolean).map((para, i) => (
-              <p key={i}>{para}</p>
-            ))}
+        <div key={section.id} className="p-8 border-b border-slate-100">
+          <h2 className="text-2xl font-bold text-indigo-700 mb-5">{section.title}</h2>
+          <div className="space-y-3 text-slate-700 leading-relaxed">
+            {section.content.split('\n').filter(Boolean).map((para, i) => <p key={i}>{para}</p>)}
           </div>
         </div>
       ))}
 
       {/* Footer */}
-      <div className="p-8 bg-stone-50 text-center">
-        <p className="text-stone-500 text-sm">{data.name} · Rapport d&apos;activité {report.year}</p>
-        <p className="text-stone-400 text-xs mt-1">Document généré le {new Date().toLocaleDateString('fr-FR')}</p>
+      <div className="p-8 bg-slate-50 text-center border-t border-slate-100">
+        <div className="inline-flex items-center gap-2 mb-2">
+          <div className="bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded">AC</div>
+          <span className="text-slate-500 text-sm">Généré avec AssoConnect Rapport</span>
+        </div>
+        <p className="text-slate-400 text-xs">{data.name} · Rapport d&apos;activité {report.year} · {new Date().toLocaleDateString('fr-FR')}</p>
       </div>
     </div>
   )
@@ -81,50 +82,39 @@ export default function ExportPage() {
   const params = useParams()
   const router = useRouter()
   const id = params.id as string
-
   const [report, setReport] = useState<Report | null>(null)
 
   useEffect(() => {
     const r = getReport(id)
     if (!r) { router.push('/rapport'); return }
-    if (r.sections.length === 0) { router.push(`/rapport/${id}/generateur`); return }
+    if (!r.sections.length) { router.push(`/rapport/${id}/generateur`); return }
     setReport(r)
   }, [id, router])
-
-  function handlePrint() {
-    window.print()
-  }
 
   function handleWordExport() {
     if (!report) return
     const data = DEMO_ASSOCIATION
-    const html = `<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><title>Rapport d'activité ${report.year} - ${data.name}</title>
-<style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;color:#1c1917;line-height:1.6}h1{color:#15803d;font-size:28px}h2{color:#15803d;font-size:22px;margin-top:36px}p{margin-bottom:12px}.cover{text-align:center;padding:60px 0;border-bottom:3px solid #15803d;margin-bottom:40px}.stats{display:flex;gap:20px;justify-content:center;margin:30px 0}.stat{text-align:center}.stat strong{display:block;font-size:28px;color:#15803d}</style>
-</head>
-<body>
-<div class="cover">
-<h1>${data.name}</h1>
-<p style="font-size:20px;color:#57534e">Rapport d'activité ${report.year}</p>
-<p style="color:#78716c">Assemblée générale du ${new Date(report.agmDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-</div>
+    const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Rapport d'activité ${report.year} — ${data.name}</title>
+<style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;color:#1e293b;line-height:1.7}h1{color:#4338ca;font-size:30px;margin-bottom:6px}h2{color:#4338ca;font-size:22px;margin-top:40px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}.cover{text-align:center;padding:80px 40px;background:#4338ca;color:white;margin-bottom:0}.cover h1{color:white}.cover p{color:#c7d2fe}.stats{display:flex;gap:0;justify-content:center;border:1px solid #e2e8f0}.stat{flex:1;text-align:center;padding:20px;border-right:1px solid #e2e8f0}.stat:last-child{border-right:none}.stat strong{display:block;font-size:28px;color:#4338ca}.stat span{font-size:13px;color:#94a3b8}p{margin-bottom:14px}</style>
+</head><body>
+<div class="cover"><h1>${data.name}</h1><p style="font-size:20px">Rapport d'activité ${report.year}</p><p>Assemblée générale du ${new Date(report.agmDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p></div>
 <div class="stats">
-<div class="stat"><strong>${data.members.current}</strong>membres</div>
-<div class="stat"><strong>${data.volunteers.total}</strong>bénévoles</div>
-<div class="stat"><strong>${data.events.length}</strong>événements</div>
-<div class="stat"><strong>${data.events.reduce((s, e) => s + e.participants, 0)}</strong>participants</div>
+  <div class="stat"><strong>${data.members.current}</strong><span>membres</span></div>
+  <div class="stat"><strong>${data.volunteers.total}</strong><span>bénévoles</span></div>
+  <div class="stat"><strong>${data.events.length}</strong><span>événements</span></div>
+  <div class="stat"><strong>${data.events.reduce((s, e) => s + e.participants, 0).toLocaleString('fr-FR')}</strong><span>participants</span></div>
 </div>
 ${report.sections.map(s => `<h2>${s.title}</h2>${s.content.split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('')}`).join('\n')}
-<hr style="margin-top:60px">
-<p style="text-align:center;color:#a8a29e;font-size:13px">${data.name} · Rapport d'activité ${report.year} · Généré le ${new Date().toLocaleDateString('fr-FR')}</p>
+<hr style="margin-top:60px;border-color:#e2e8f0">
+<p style="text-align:center;color:#94a3b8;font-size:12px">${data.name} · Rapport d'activité ${report.year} · Généré avec AssoConnect Rapport</p>
 </body></html>`
 
     const blob = new Blob([html], { type: 'application/msword' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `rapport-activite-${report.year}.doc`
+    a.download = `rapport-${data.name.toLowerCase().replace(/\s+/g, '-')}-${report.year}.doc`
     a.click()
     URL.revokeObjectURL(url)
   }
@@ -136,36 +126,37 @@ ${report.sections.map(s => `<h2>${s.title}</h2>${s.content.split('\n').filter(Bo
       <style>{`
         @media print {
           body > * { display: none !important; }
-          #rapport-print, #rapport-print * { display: revert !important; }
-          #rapport-print { max-width: 100% !important; }
+          #rapport-print { display: block !important; max-width: 100% !important; }
+          #rapport-print * { display: revert !important; }
         }
       `}</style>
 
-      <div className="flex flex-col gap-4 print:hidden">
-        <StepTracker reportId={id} current="export" reached="export" />
-        <div className="flex items-center justify-between">
+      <div className="print:hidden">
+        <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-stone-900">Export du rapport</h1>
-            <p className="text-stone-600 mt-1">Votre rapport est prêt. Téléchargez-le dans le format souhaité.</p>
+            <h1 className="text-2xl font-bold text-slate-900">Export 🎉</h1>
+            <p className="text-slate-500 mt-1">Votre rapport est prêt. Bravo, vraiment ! C&apos;était pas si long, hein ?</p>
           </div>
           <div className="flex gap-3">
-            <button
-              onClick={handleWordExport}
-              className="border border-stone-300 text-stone-700 hover:bg-stone-50 font-medium px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2"
-            >
-              📄 Télécharger Word
+            <button onClick={handleWordExport} className="flex items-center gap-2 border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold px-5 py-2.5 rounded-xl transition-colors">
+              <span>📄</span> Word
             </button>
-            <button
-              onClick={handlePrint}
-              className="bg-green-700 hover:bg-green-800 text-white font-semibold px-5 py-2.5 rounded-xl transition-colors flex items-center gap-2"
-            >
-              🖨️ Télécharger PDF
+            <button onClick={() => window.print()} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-indigo-200">
+              <span>🖨️</span> PDF
             </button>
+          </div>
+        </div>
+
+        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex items-start gap-4 mb-6">
+          <span className="text-3xl">🥳</span>
+          <div>
+            <p className="font-bold text-emerald-800">Félicitations ! Votre rapport est prêt pour l&apos;AG.</p>
+            <p className="text-emerald-600 text-sm">Téléchargez-le en PDF pour l&apos;imprimer, ou en Word pour une dernière mise en forme. Vous l&apos;avez mérité !</p>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm overflow-hidden print:shadow-none print:border-0 print:rounded-none">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden print:shadow-none print:border-0 print:rounded-none">
         <ReportPreview report={report} />
       </div>
     </div>

@@ -83,12 +83,36 @@ export function deleteReport(id: string): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(reports))
 }
 
+export type StepCompletion = {
+  data_review: boolean
+  interview: boolean
+  contributors: boolean
+  photos: boolean
+  generation: boolean
+  editing: boolean
+  export: boolean
+}
+
+export function getStepCompletion(report: Report): StepCompletion {
+  const interviewAnswered = Object.values(report.interview).filter(v => v?.trim()).length
+  const contributorsComplete = Object.values(report.contributorStatuses).filter(s => s === 'complete').length
+  return {
+    data_review: true,
+    interview: interviewAnswered >= 4,
+    contributors: contributorsComplete >= 1,
+    photos: true,
+    generation: report.sections.length > 0,
+    editing: report.sections.length > 0,
+    export: report.sections.length > 0,
+  }
+}
+
 export const STATUS_LABELS: Record<ReportStatus, string> = {
-  data_review: 'Révision des données',
-  interview: 'Entretien guidé',
+  data_review: 'Données',
+  interview: 'Entretien',
   contributors: 'Contributeurs',
   photos: 'Photos',
-  generation: 'Génération IA',
+  generation: 'Génération',
   editing: 'Édition',
   export: 'Export',
 }
@@ -96,8 +120,3 @@ export const STATUS_LABELS: Record<ReportStatus, string> = {
 export const STATUS_ORDER: ReportStatus[] = [
   'data_review', 'interview', 'contributors', 'photos', 'generation', 'editing', 'export'
 ]
-
-export function getNextStatus(status: ReportStatus): ReportStatus | null {
-  const idx = STATUS_ORDER.indexOf(status)
-  return idx < STATUS_ORDER.length - 1 ? STATUS_ORDER[idx + 1] : null
-}

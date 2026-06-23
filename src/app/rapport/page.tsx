@@ -6,23 +6,18 @@ import { getReports, deleteReport, Report, STATUS_LABELS } from '@/lib/report-st
 import { DEMO_ASSOCIATION } from '@/lib/mock-data'
 
 const STATUS_COLORS: Record<string, string> = {
-  data_review: 'bg-blue-100 text-blue-700',
-  interview: 'bg-purple-100 text-purple-700',
-  contributors: 'bg-yellow-100 text-yellow-700',
-  photos: 'bg-orange-100 text-orange-700',
-  generation: 'bg-amber-100 text-amber-700',
-  editing: 'bg-green-100 text-green-700',
-  export: 'bg-emerald-100 text-emerald-700',
+  data_review: 'bg-blue-50 text-blue-600 border-blue-100',
+  interview: 'bg-violet-50 text-violet-600 border-violet-100',
+  contributors: 'bg-amber-50 text-amber-600 border-amber-100',
+  photos: 'bg-orange-50 text-orange-600 border-orange-100',
+  generation: 'bg-indigo-50 text-indigo-600 border-indigo-100',
+  editing: 'bg-emerald-50 text-emerald-600 border-emerald-100',
+  export: 'bg-green-50 text-green-600 border-green-100',
 }
 
 const STATUS_PATHS: Record<string, string> = {
-  data_review: 'donnees',
-  interview: 'interview',
-  contributors: 'contributeurs',
-  photos: 'photos',
-  generation: 'generateur',
-  editing: 'editeur',
-  export: 'export',
+  data_review: 'donnees', interview: 'interview', contributors: 'contributeurs',
+  photos: 'photos', generation: 'generateur', editing: 'editeur', export: 'export',
 }
 
 function formatDate(iso: string) {
@@ -43,94 +38,102 @@ export default function RapportDashboard() {
     }
   }
 
+  const data = DEMO_ASSOCIATION
+  const totalParticipants = data.events.reduce((s, e) => s + e.participants, 0)
+
   return (
     <div className="space-y-8">
       {/* Hero */}
-      <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            <span className="text-4xl">🌱</span>
-            <div>
-              <p className="text-sm text-stone-500 font-medium">{DEMO_ASSOCIATION.name}</p>
-              <h1 className="text-2xl font-bold text-stone-900">Rapport d&apos;activité annuel</h1>
-            </div>
+      <div className="bg-indigo-600 rounded-3xl p-8 text-white overflow-hidden relative">
+        <div className="absolute top-0 right-0 text-[200px] leading-none opacity-10 select-none">🌱</div>
+        <div className="relative">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="bg-white text-indigo-600 text-xs font-bold px-2.5 py-1 rounded-lg">AssoConnect</div>
+            <span className="text-indigo-200 text-sm">Rapport d&apos;activité</span>
           </div>
-          <p className="text-stone-600 max-w-lg">
-            Générez un rapport d&apos;activité complet et engageant en moins de 30 minutes, à partir de vos données et de l&apos;intelligence artificielle.
+          <h1 className="text-3xl font-bold mb-2">Bonjour 👋</h1>
+          <p className="text-indigo-200 text-lg mb-6 max-w-lg">
+            Votre rapport annuel, prêt en 30 minutes. Sans page blanche. Sans galère. Avec des données réelles et l&apos;IA.
           </p>
+          <Link href="/rapport/nouveau" className="inline-flex items-center gap-2 bg-white text-indigo-700 font-bold px-6 py-3 rounded-2xl hover:bg-indigo-50 transition-colors shadow-lg">
+            <span>✨</span> Créer un nouveau rapport
+          </Link>
         </div>
-        <Link
-          href="/rapport/nouveau"
-          className="shrink-0 bg-green-700 hover:bg-green-800 text-white font-semibold px-6 py-3 rounded-xl transition-colors flex items-center gap-2"
-        >
-          <span>+</span>
-          Créer un rapport
-        </Link>
       </div>
 
       {/* Stats strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {[
-          { label: 'Membres', value: DEMO_ASSOCIATION.members.current, unit: '', sub: `+${DEMO_ASSOCIATION.members.current - DEMO_ASSOCIATION.members.previous} vs 2024` },
-          { label: 'Bénévoles', value: DEMO_ASSOCIATION.volunteers.total, unit: '', sub: `${DEMO_ASSOCIATION.volunteers.active} actifs` },
-          { label: 'Événements', value: DEMO_ASSOCIATION.events.length, unit: '', sub: `${DEMO_ASSOCIATION.events.reduce((s, e) => s + e.participants, 0)} participants` },
-          { label: 'Résultat', value: DEMO_ASSOCIATION.finance.surplus.toLocaleString('fr-FR'), unit: '€', sub: 'excédent annuel' },
+          { label: 'Membres', value: data.members.current, icon: '👥', sub: `+${data.members.current - data.members.previous} cette année` },
+          { label: 'Bénévoles', value: data.volunteers.total, icon: '🙌', sub: `${data.volunteers.active} très actifs` },
+          { label: 'Événements', value: data.events.length, icon: '📅', sub: `${totalParticipants} participants` },
+          { label: 'Résultat', value: `+${data.finance.surplus.toLocaleString('fr-FR')} €`, icon: '💰', sub: 'excédent 2025' },
         ].map(stat => (
-          <div key={stat.label} className="bg-white rounded-xl border border-stone-200 p-4">
-            <p className="text-xs text-stone-500 font-medium uppercase tracking-wide">{stat.label}</p>
-            <p className="text-2xl font-bold text-stone-900 mt-1">{stat.value}<span className="text-lg">{stat.unit}</span></p>
-            <p className="text-xs text-stone-500 mt-1">{stat.sub}</p>
+          <div key={stat.label} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-2xl">{stat.icon}</span>
+              <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide">{stat.label}</span>
+            </div>
+            <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+            <p className="text-xs text-slate-400 mt-1">{stat.sub}</p>
           </div>
         ))}
       </div>
 
       {/* Reports list */}
       <div>
-        <h2 className="text-lg font-semibold text-stone-800 mb-4">Mes rapports</h2>
+        <h2 className="text-lg font-bold text-slate-800 mb-4">Mes rapports</h2>
+
         {reports.length === 0 ? (
-          <div className="bg-white rounded-xl border border-dashed border-stone-300 p-12 text-center">
-            <div className="text-5xl mb-4">📄</div>
-            <h3 className="text-stone-700 font-semibold mb-2">Aucun rapport pour le moment</h3>
-            <p className="text-stone-500 text-sm mb-6">Créez votre premier rapport d&apos;activité annuel</p>
-            <Link href="/rapport/nouveau" className="bg-green-700 hover:bg-green-800 text-white font-medium px-5 py-2.5 rounded-lg transition-colors inline-block">
-              Créer mon premier rapport
+          <div className="bg-white rounded-2xl border border-dashed border-slate-300 p-14 text-center">
+            <div className="text-6xl mb-4">📄</div>
+            <h3 className="text-slate-700 font-bold text-lg mb-2">Aucun rapport pour le moment</h3>
+            <p className="text-slate-400 text-sm mb-6 max-w-xs mx-auto">Créez votre premier rapport et découvrez la magie 🪄</p>
+            <Link href="/rapport/nouveau" className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors inline-block">
+              C&apos;est parti ! →
             </Link>
           </div>
         ) : (
           <div className="space-y-3">
             {reports.map(report => (
-              <div key={report.id} className="bg-white rounded-xl border border-stone-200 p-5 flex items-center justify-between gap-4">
+              <div key={report.id} className="bg-white rounded-2xl border border-slate-200 p-5 flex items-center justify-between gap-4 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-green-50 rounded-lg flex items-center justify-center text-xl font-bold text-green-700">
+                  <div className="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center text-xl font-bold text-indigo-600 border border-indigo-100">
                     {report.year}
                   </div>
                   <div>
-                    <p className="font-semibold text-stone-800">Rapport {report.year}</p>
-                    <p className="text-sm text-stone-500">Créé le {formatDate(report.createdAt)} · AG le {formatDate(report.agmDate)}</p>
+                    <p className="font-bold text-slate-800">{data.name} — {report.year}</p>
+                    <p className="text-sm text-slate-400">Créé le {formatDate(report.createdAt)} · AG le {formatDate(report.agmDate)}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className={`text-xs font-medium px-3 py-1 rounded-full ${STATUS_COLORS[report.status]}`}>
+                  <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${STATUS_COLORS[report.status]}`}>
                     {STATUS_LABELS[report.status]}
                   </span>
-                  <Link
-                    href={`/rapport/${report.id}/${STATUS_PATHS[report.status]}`}
-                    className="bg-green-700 hover:bg-green-800 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
-                  >
+                  <Link href={`/rapport/${report.id}/${STATUS_PATHS[report.status]}`} className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold px-4 py-2 rounded-xl transition-colors">
                     Continuer →
                   </Link>
-                  <button
-                    onClick={() => handleDelete(report.id)}
-                    className="text-stone-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50"
-                    title="Supprimer"
-                  >
-                    🗑
-                  </button>
+                  <button onClick={() => handleDelete(report.id)} className="text-slate-300 hover:text-red-400 p-1.5 rounded-lg hover:bg-red-50 transition-colors" title="Supprimer">🗑</button>
                 </div>
               </div>
             ))}
           </div>
         )}
+      </div>
+
+      {/* Feature teaser */}
+      <div className="grid md:grid-cols-3 gap-4">
+        {[
+          { icon: '📊', title: 'Données automatiques', desc: 'Membres, finances, événements… déjà là depuis AssoConnect.' },
+          { icon: '🤖', title: 'IA à votre service', desc: 'L\'IA rédige, vous validez. Jamais l\'inverse.' },
+          { icon: '📸', title: 'Photos incluses', desc: 'Importez depuis votre site ou votre téléphone.' },
+        ].map(f => (
+          <div key={f.title} className="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm">
+            <div className="text-3xl mb-3">{f.icon}</div>
+            <p className="font-semibold text-slate-800 mb-1">{f.title}</p>
+            <p className="text-sm text-slate-400">{f.desc}</p>
+          </div>
+        ))}
       </div>
     </div>
   )

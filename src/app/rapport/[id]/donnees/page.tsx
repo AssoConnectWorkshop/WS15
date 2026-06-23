@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getReport, updateReport } from '@/lib/report-store'
 import { DEMO_ASSOCIATION } from '@/lib/mock-data'
-import StepTracker from '@/components/StepTracker'
 
 const CATEGORY_LABELS: Record<string, string> = {
   activité: '🌿 Activité',
@@ -15,17 +14,17 @@ const CATEGORY_LABELS: Record<string, string> = {
   gouvernance: '📋 Gouvernance',
 }
 
-function StatCard({ title, icon, children, badge }: { title: string; icon: string; children: React.ReactNode; badge?: string }) {
+function Card({ title, icon, children, badge }: { title: string; icon: string; children: React.ReactNode; badge?: string }) {
   return (
-    <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-6">
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <span className="text-xl">{icon}</span>
-          <h3 className="font-semibold text-stone-800">{title}</h3>
+          <h3 className="font-semibold text-slate-800">{title}</h3>
         </div>
         {badge && (
-          <span className="text-xs bg-green-100 text-green-700 font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
-            <span>✓</span> {badge}
+          <span className="text-xs bg-emerald-100 text-emerald-700 font-medium px-2.5 py-1 rounded-full flex items-center gap-1">
+            ✓ {badge}
           </span>
         )}
       </div>
@@ -51,164 +50,140 @@ export default function DonneesPage() {
     router.push(`/rapport/${id}/interview`)
   }
 
+  if (!ready) return null
+
   const data = DEMO_ASSOCIATION
   const totalParticipants = data.events.reduce((s, e) => s + e.participants, 0)
   const totalRevenue = Object.values(data.finance.revenue).reduce((s, v) => s + v, 0)
-  const totalExpenses = Object.values(data.finance.expenses).reduce((s, v) => s + v, 0)
 
-  if (!ready) return null
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4">
-        <StepTracker reportId={id} current="data_review" reached="data_review" />
-        <div>
-          <h1 className="text-2xl font-bold text-stone-900">Révision des données</h1>
-          <p className="text-stone-600 mt-1">Vérifiez les informations importées automatiquement depuis AssoConnect.</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-slate-900">Vos données 📊</h1>
+        <p className="text-slate-500 mt-1">On a tout récupéré depuis AssoConnect. Plus qu&apos;à vérifier que tout est bien là !</p>
       </div>
 
-      <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
-        <span className="text-green-600 text-xl mt-0.5">✓</span>
+      <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex items-start gap-3">
+        <span className="text-2xl">🎯</span>
         <div>
-          <p className="font-semibold text-green-800">Données importées avec succès</p>
-          <p className="text-green-700 text-sm">Membres, événements, finances et bénévoles sont prêts à être utilisés dans votre rapport.</p>
+          <p className="font-semibold text-indigo-800">Données importées automatiquement</p>
+          <p className="text-indigo-600 text-sm">Membres, événements, finances et bénévoles sont prêts à rejoindre votre rapport. Vous n&apos;avez rien eu à chercher !</p>
         </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        {/* Members */}
-        <StatCard title="Membres" icon="👥" badge="Données disponibles">
+        <Card title="Membres" icon="👥" badge="Importé">
           <div className="flex items-end gap-4 mb-4">
             <div>
-              <p className="text-4xl font-bold text-stone-900">{data.members.current}</p>
-              <p className="text-sm text-stone-500">membres en {data.year}</p>
+              <p className="text-4xl font-bold text-slate-900">{data.members.current}</p>
+              <p className="text-sm text-slate-500">membres en {data.year}</p>
             </div>
-            <div className="text-right">
-              <p className="text-lg font-semibold text-green-600">+{data.members.current - data.members.previous}</p>
-              <p className="text-xs text-stone-500">vs {data.previousYear}</p>
+            <div className="text-right pb-1">
+              <p className="text-lg font-bold text-emerald-600">+{data.members.current - data.members.previous}</p>
+              <p className="text-xs text-slate-400">vs {data.previousYear}</p>
             </div>
           </div>
-          {/* Simple bar chart */}
           <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-stone-500 w-10">{data.previousYear}</span>
-              <div className="flex-1 bg-stone-100 rounded-full h-3">
-                <div className="bg-stone-400 h-3 rounded-full" style={{ width: `${(data.members.previous / data.members.current) * 100}%` }} />
+            {[
+              { year: data.previousYear, count: data.members.previous, color: 'bg-slate-300' },
+              { year: data.year, count: data.members.current, color: 'bg-indigo-500' },
+            ].map(row => (
+              <div key={row.year} className="flex items-center gap-3">
+                <span className="text-xs text-slate-400 w-10">{row.year}</span>
+                <div className="flex-1 bg-slate-100 rounded-full h-3">
+                  <div className={`${row.color} h-3 rounded-full`} style={{ width: `${(row.count / data.members.current) * 100}%` }} />
+                </div>
+                <span className="text-xs font-medium text-slate-600 w-8">{row.count}</span>
               </div>
-              <span className="text-xs font-medium text-stone-600 w-8">{data.members.previous}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-stone-500 w-10">{data.year}</span>
-              <div className="flex-1 bg-stone-100 rounded-full h-3">
-                <div className="bg-green-600 h-3 rounded-full w-full" />
-              </div>
-              <span className="text-xs font-medium text-stone-600 w-8">{data.members.current}</span>
-            </div>
+            ))}
           </div>
-        </StatCard>
+        </Card>
 
-        {/* Volunteers */}
-        <StatCard title="Bénévoles" icon="🙌" badge="Données disponibles">
+        <Card title="Bénévoles" icon="🙌" badge="Importé">
           <div className="flex items-end gap-4 mb-4">
             <div>
-              <p className="text-4xl font-bold text-stone-900">{data.volunteers.total}</p>
-              <p className="text-sm text-stone-500">bénévoles au total</p>
+              <p className="text-4xl font-bold text-slate-900">{data.volunteers.total}</p>
+              <p className="text-sm text-slate-500">bénévoles au total</p>
             </div>
-            <div className="text-right">
-              <p className="text-lg font-semibold text-amber-600">{data.volunteers.active}</p>
-              <p className="text-xs text-stone-500">actifs réguliers</p>
+            <div className="text-right pb-1">
+              <p className="text-lg font-bold text-amber-500">{data.volunteers.active}</p>
+              <p className="text-xs text-slate-400">très actifs</p>
             </div>
           </div>
           <div className="space-y-2">
             {data.topVolunteers.slice(0, 3).map(v => (
-              <div key={v.name} className="flex items-center justify-between py-1 border-b border-stone-100 last:border-0">
+              <div key={v.name} className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
                 <div>
-                  <p className="text-sm font-medium text-stone-700">{v.name}</p>
-                  <p className="text-xs text-stone-500">{v.role}</p>
+                  <p className="text-sm font-medium text-slate-700">{v.name}</p>
+                  <p className="text-xs text-slate-400">{v.role}</p>
                 </div>
-                <span className="text-sm font-semibold text-stone-600">{v.hours}h</span>
+                <span className="text-sm font-bold text-indigo-600">{v.hours}h</span>
               </div>
             ))}
           </div>
-        </StatCard>
+        </Card>
 
-        {/* Events */}
-        <StatCard title="Événements" icon="📅" badge="Données disponibles">
+        <Card title="Événements" icon="📅" badge="Importé">
           <div className="flex gap-6 mb-4">
             <div>
-              <p className="text-4xl font-bold text-stone-900">{data.events.length}</p>
-              <p className="text-sm text-stone-500">événements</p>
+              <p className="text-4xl font-bold text-slate-900">{data.events.length}</p>
+              <p className="text-sm text-slate-500">événements</p>
             </div>
             <div>
-              <p className="text-4xl font-bold text-stone-900">{totalParticipants.toLocaleString('fr-FR')}</p>
-              <p className="text-sm text-stone-500">participants</p>
+              <p className="text-4xl font-bold text-slate-900">{totalParticipants.toLocaleString('fr-FR')}</p>
+              <p className="text-sm text-slate-500">participants</p>
             </div>
           </div>
-          <div className="space-y-1.5 max-h-48 overflow-y-auto">
+          <div className="space-y-1.5 max-h-44 overflow-y-auto">
             {data.events.map(ev => (
               <div key={ev.name} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs">{CATEGORY_LABELS[ev.category] ?? ev.category}</span>
-                  <span className="text-stone-700 truncate max-w-40">{ev.name}</span>
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="text-xs shrink-0">{CATEGORY_LABELS[ev.category]?.split(' ')[0] ?? '•'}</span>
+                  <span className="text-slate-700 truncate">{ev.name}</span>
                 </div>
-                <span className="text-stone-500 shrink-0">{ev.participants} pers.</span>
+                <span className="text-slate-400 shrink-0 ml-2">{ev.participants}</span>
               </div>
             ))}
           </div>
-        </StatCard>
+        </Card>
 
-        {/* Finance */}
-        <StatCard title="Bilan financier" icon="💰" badge="Données disponibles">
+        <Card title="Bilan financier" icon="💰" badge="Importé">
           <div className="space-y-3">
             <div>
-              <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Recettes — {totalRevenue.toLocaleString('fr-FR')} €</p>
-              {Object.entries(data.finance.revenue).map(([k, v]) => (
-                <div key={k} className="flex items-center gap-2 mb-1">
-                  <div className="flex-1 bg-stone-100 rounded-full h-2">
-                    <div className="bg-green-500 h-2 rounded-full" style={{ width: `${(v / totalRevenue) * 100}%` }} />
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Recettes · {totalRevenue.toLocaleString('fr-FR')} €</p>
+              {Object.entries({ 'Dons': data.finance.revenue.donations, 'Subventions': data.finance.revenue.grants, 'Cotisations': data.finance.revenue.membershipFees, 'Autres': data.finance.revenue.other }).map(([k, v]) => (
+                <div key={k} className="flex items-center gap-2 mb-1.5">
+                  <span className="text-xs text-slate-500 w-20 shrink-0">{k}</span>
+                  <div className="flex-1 bg-slate-100 rounded-full h-2">
+                    <div className="bg-indigo-400 h-2 rounded-full" style={{ width: `${(v / totalRevenue) * 100}%` }} />
                   </div>
-                  <span className="text-xs text-stone-600 w-20 text-right">{v.toLocaleString('fr-FR')} €</span>
+                  <span className="text-xs font-medium text-slate-600 w-16 text-right">{v.toLocaleString('fr-FR')} €</span>
                 </div>
               ))}
             </div>
-            <div className="border-t border-stone-100 pt-3">
-              <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">Dépenses — {totalExpenses.toLocaleString('fr-FR')} €</p>
-              {Object.entries(data.finance.expenses).map(([k, v]) => (
-                <div key={k} className="flex items-center gap-2 mb-1">
-                  <div className="flex-1 bg-stone-100 rounded-full h-2">
-                    <div className="bg-amber-400 h-2 rounded-full" style={{ width: `${(v / totalExpenses) * 100}%` }} />
-                  </div>
-                  <span className="text-xs text-stone-600 w-20 text-right">{v.toLocaleString('fr-FR')} €</span>
-                </div>
-              ))}
-            </div>
-            <div className="bg-green-50 rounded-lg p-3 flex justify-between items-center">
-              <span className="text-sm font-medium text-green-800">Résultat annuel</span>
-              <span className="text-lg font-bold text-green-700">+{data.finance.surplus.toLocaleString('fr-FR')} €</span>
+            <div className="bg-emerald-50 rounded-xl p-3 flex justify-between items-center border border-emerald-100">
+              <span className="text-sm font-semibold text-emerald-800">🎯 Excédent {data.year}</span>
+              <span className="text-lg font-bold text-emerald-600">+{data.finance.surplus.toLocaleString('fr-FR')} €</span>
             </div>
           </div>
-        </StatCard>
+        </Card>
       </div>
 
-      {/* Partners */}
-      <StatCard title="Partenaires et soutiens" icon="🤝" badge="Données disponibles">
+      <Card title="Partenaires" icon="🤝" badge="Importé">
         <div className="flex flex-wrap gap-3">
           {data.partners.map(p => (
-            <div key={p.name} className="flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
-              <span className="font-medium text-stone-700 text-sm">{p.name}</span>
-              <span className="text-xs text-stone-400">{p.type}</span>
+            <div key={p.name} className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2">
+              <span className="font-medium text-slate-700 text-sm">{p.name}</span>
+              <span className="text-xs text-slate-400 bg-white border border-slate-100 rounded-full px-2 py-0.5">{p.type}</span>
             </div>
           ))}
         </div>
-      </StatCard>
+      </Card>
 
-      <div className="flex justify-end pt-2">
-        <button
-          onClick={handleContinue}
-          className="bg-green-700 hover:bg-green-800 text-white font-semibold px-8 py-3 rounded-xl transition-colors"
-        >
-          Continuer vers l&apos;entretien guidé →
+      <div className="flex justify-end">
+        <button onClick={handleContinue} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition-colors">
+          Aller à l&apos;entretien →
         </button>
       </div>
     </div>
