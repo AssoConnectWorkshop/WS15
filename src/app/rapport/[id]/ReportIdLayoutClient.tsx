@@ -176,7 +176,7 @@ export default function ReportIdLayout({ children, orgName }: { children: React.
         <div className="fixed inset-0 z-50 md:hidden">
           <div className="absolute inset-0 bg-black/40" onClick={() => setMobileOpen(false)} />
           <div className="absolute left-0 top-0 bottom-0 w-64 shadow-2xl overflow-hidden">
-            <SidebarContent reportId={id} pathname={pathname} report={report} onClose={() => setMobileOpen(false)} />
+            <SidebarContent reportId={id} pathname={pathname} report={report} orgName={orgName} onClose={() => setMobileOpen(false)} />
           </div>
         </div>
       )}
