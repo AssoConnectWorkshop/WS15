@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getReport, Report } from '@/lib/report-store'
 import { DEMO_ASSOCIATION } from '@/lib/mock-data'
+import Confetti from '@/components/Confetti'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
@@ -16,15 +17,12 @@ function ReportPreview({ report }: { report: Report }) {
 
   return (
     <div id="rapport-print" className="bg-white text-slate-900 max-w-3xl mx-auto font-sans">
-      {/* Cover */}
-      <div className="text-center py-20 px-8 bg-indigo-700 text-white">
+      <div className="text-center py-20 px-8 bg-gradient-to-br from-indigo-700 to-violet-700 text-white">
         <div className="text-7xl mb-6">🌱</div>
         <h1 className="text-4xl font-bold mb-3">{data.name}</h1>
         <p className="text-xl text-indigo-200 mb-2">Rapport d&apos;activité {report.year}</p>
         <p className="text-indigo-300 text-sm">Assemblée générale du {formatDate(report.agmDate)}</p>
       </div>
-
-      {/* Key figures */}
       <div className="grid grid-cols-4 border-b border-slate-100">
         {[
           { label: 'Membres', value: data.members.current, icon: '👥' },
@@ -39,8 +37,6 @@ function ReportPreview({ report }: { report: Report }) {
           </div>
         ))}
       </div>
-
-      {/* Featured photos */}
       {featuredPhotos.length > 0 && (
         <div className="p-8 border-b border-slate-100">
           <h2 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">L&apos;année en images</h2>
@@ -55,8 +51,6 @@ function ReportPreview({ report }: { report: Report }) {
           </div>
         </div>
       )}
-
-      {/* Sections */}
       {report.sections.map(section => (
         <div key={section.id} className="p-8 border-b border-slate-100">
           <h2 className="text-2xl font-bold text-indigo-700 mb-5">{section.title}</h2>
@@ -65,8 +59,6 @@ function ReportPreview({ report }: { report: Report }) {
           </div>
         </div>
       ))}
-
-      {/* Footer */}
       <div className="p-8 bg-slate-50 text-center border-t border-slate-100">
         <div className="inline-flex items-center gap-2 mb-2">
           <div className="bg-indigo-600 text-white text-xs font-bold px-2 py-1 rounded">AC</div>
@@ -83,12 +75,14 @@ export default function ExportPage() {
   const router = useRouter()
   const id = params.id as string
   const [report, setReport] = useState<Report | null>(null)
+  const [showConfetti, setShowConfetti] = useState(false)
 
   useEffect(() => {
     const r = getReport(id)
     if (!r) { router.push('/rapport'); return }
     if (!r.sections.length) { router.push(`/rapport/${id}/generateur`); return }
     setReport(r)
+    setTimeout(() => setShowConfetti(true), 400)
   }, [id, router])
 
   function handleWordExport() {
@@ -96,9 +90,9 @@ export default function ExportPage() {
     const data = DEMO_ASSOCIATION
     const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
 <title>Rapport d'activité ${report.year} — ${data.name}</title>
-<style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;color:#1e293b;line-height:1.7}h1{color:#4338ca;font-size:30px;margin-bottom:6px}h2{color:#4338ca;font-size:22px;margin-top:40px;margin-bottom:16px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}.cover{text-align:center;padding:80px 40px;background:#4338ca;color:white;margin-bottom:0}.cover h1{color:white}.cover p{color:#c7d2fe}.stats{display:flex;gap:0;justify-content:center;border:1px solid #e2e8f0}.stat{flex:1;text-align:center;padding:20px;border-right:1px solid #e2e8f0}.stat:last-child{border-right:none}.stat strong{display:block;font-size:28px;color:#4338ca}.stat span{font-size:13px;color:#94a3b8}p{margin-bottom:14px}</style>
+<style>body{font-family:Georgia,serif;max-width:800px;margin:40px auto;color:#1e293b;line-height:1.7}h1{color:#4338ca}h2{color:#4338ca;font-size:22px;margin-top:40px;padding-bottom:8px;border-bottom:2px solid #e2e8f0}.cover{text-align:center;padding:80px 40px;background:linear-gradient(135deg,#4338ca,#7c3aed);color:white;margin-bottom:0}.cover h1{color:white;font-size:32px}.cover p{color:#c7d2fe}.stats{display:flex;border:1px solid #e2e8f0}.stat{flex:1;text-align:center;padding:20px;border-right:1px solid #e2e8f0}.stat:last-child{border:none}.stat strong{display:block;font-size:28px;color:#4338ca}.stat span{font-size:13px;color:#94a3b8}p{margin-bottom:14px}</style>
 </head><body>
-<div class="cover"><h1>${data.name}</h1><p style="font-size:20px">Rapport d'activité ${report.year}</p><p>Assemblée générale du ${new Date(report.agmDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p></div>
+<div class="cover"><h1>${data.name}</h1><p style="font-size:20px">Rapport d'activité ${report.year}</p><p>AG du ${new Date(report.agmDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })}</p></div>
 <div class="stats">
   <div class="stat"><strong>${data.members.current}</strong><span>membres</span></div>
   <div class="stat"><strong>${data.volunteers.total}</strong><span>bénévoles</span></div>
@@ -107,9 +101,8 @@ export default function ExportPage() {
 </div>
 ${report.sections.map(s => `<h2>${s.title}</h2>${s.content.split('\n').filter(Boolean).map(p => `<p>${p}</p>`).join('')}`).join('\n')}
 <hr style="margin-top:60px;border-color:#e2e8f0">
-<p style="text-align:center;color:#94a3b8;font-size:12px">${data.name} · Rapport d'activité ${report.year} · Généré avec AssoConnect Rapport</p>
+<p style="text-align:center;color:#94a3b8;font-size:12px">Généré avec AssoConnect Rapport · ${data.name} · ${report.year}</p>
 </body></html>`
-
     const blob = new Blob([html], { type: 'application/msword' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -131,27 +124,37 @@ ${report.sections.map(s => `<h2>${s.title}</h2>${s.content.split('\n').filter(Bo
         }
       `}</style>
 
-      <div className="print:hidden">
-        <div className="flex items-center justify-between mb-6">
+      <Confetti active={showConfetti} />
+
+      <div className="print:hidden space-y-4">
+        <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">Export 🎉</h1>
-            <p className="text-slate-500 mt-1">Votre rapport est prêt. Bravo, vraiment ! C&apos;était pas si long, hein ?</p>
+            <p className="text-slate-500 mt-1">C&apos;est prêt ! Vous pouvez être fier·e.</p>
           </div>
           <div className="flex gap-3">
-            <button onClick={handleWordExport} className="flex items-center gap-2 border border-slate-200 text-slate-600 hover:bg-slate-50 font-semibold px-5 py-2.5 rounded-xl transition-colors">
-              <span>📄</span> Word
+            <button onClick={handleWordExport} className="flex items-center gap-2 border-2 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold px-5 py-2.5 rounded-xl transition-colors">
+              📄 Word
             </button>
-            <button onClick={() => window.print()} className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-5 py-2.5 rounded-xl transition-colors shadow-lg shadow-indigo-200">
-              <span>🖨️</span> PDF
+            <button onClick={() => window.print()} className="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold px-5 py-2.5 rounded-xl transition-all shadow-lg shadow-indigo-200 hover:scale-105 active:scale-95">
+              🖨️ PDF
             </button>
           </div>
         </div>
 
-        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex items-start gap-4 mb-6">
-          <span className="text-3xl">🥳</span>
-          <div>
-            <p className="font-bold text-emerald-800">Félicitations ! Votre rapport est prêt pour l&apos;AG.</p>
-            <p className="text-emerald-600 text-sm">Téléchargez-le en PDF pour l&apos;imprimer, ou en Word pour une dernière mise en forme. Vous l&apos;avez mérité !</p>
+        <div className="bg-gradient-to-r from-emerald-500 to-green-600 rounded-2xl p-6 text-white shadow-xl shadow-emerald-200">
+          <div className="flex items-start gap-5">
+            <span className="text-5xl">🏆</span>
+            <div>
+              <p className="font-black text-2xl mb-1">Vous avez fini ! Légendaire.</p>
+              <p className="text-emerald-100 mb-3">Votre rapport d&apos;activité {report.year} est complet, professionnel et prêt pour l&apos;AG. Et vous l&apos;avez fait en moins de 30 minutes. 🎯</p>
+              <div className="flex flex-wrap gap-3">
+                <span className="bg-white/20 text-white text-sm font-bold px-3 py-1.5 rounded-full">📄 {report.sections.length} sections</span>
+                <span className="bg-white/20 text-white text-sm font-bold px-3 py-1.5 rounded-full">✍️ {report.sections.reduce((s, sec) => s + sec.content.split(/\s+/).filter(Boolean).length, 0)} mots</span>
+                <span className="bg-white/20 text-white text-sm font-bold px-3 py-1.5 rounded-full">📸 {report.photos.length} photos</span>
+                <span className="bg-white/20 text-white text-sm font-bold px-3 py-1.5 rounded-full">🌱 {DEMO_ASSOCIATION.members.current} membres représentés</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
