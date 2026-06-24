@@ -168,6 +168,21 @@ export default function RapportDashboardClient({ orgName, members, people, struc
         </div>
       </div>
 
+      {/* 3 pillars */}
+      <div className="grid md:grid-cols-3 gap-4">
+        {[
+          { icon: '⚡', title: '30 minutes, pas plus', desc: 'On a chronométré. Vraiment.', color: 'from-amber-50 to-orange-50 border-amber-100' },
+          { icon: '🤖', title: "L'IA fait le boulot", desc: 'Vous validez. Elle rédige. Pas l\'inverse.', color: 'from-indigo-50 to-violet-50 border-indigo-100' },
+          { icon: '🏆', title: 'Rapport pro garanti', desc: 'Vos membres vont être impressionnés.', color: 'from-emerald-50 to-green-50 border-emerald-100' },
+        ].map(f => (
+          <div key={f.title} className={`bg-gradient-to-br ${f.color} rounded-2xl border p-5`}>
+            <div className="text-4xl mb-3">{f.icon}</div>
+            <p className="font-black text-slate-800 mb-1">{f.title}</p>
+            <p className="text-sm text-slate-500">{f.desc}</p>
+          </div>
+        ))}
+      </div>
+
       {/* Value prop + stats */}
       <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-3xl p-6 space-y-5">
         <div>
@@ -249,20 +264,6 @@ export default function RapportDashboardClient({ orgName, members, people, struc
         )}
       </div>
 
-      {/* Why it's great */}
-      <div className="grid md:grid-cols-3 gap-4">
-        {[
-          { icon: '⚡', title: '30 minutes, pas plus', desc: 'On a chronométré. Vraiment.', color: 'from-amber-50 to-orange-50 border-amber-100' },
-          { icon: '🤖', title: 'L\'IA fait le boulot', desc: 'Vous validez. Elle rédige. Pas l\'inverse.', color: 'from-indigo-50 to-violet-50 border-indigo-100' },
-          { icon: '🏆', title: 'Rapport pro garanti', desc: 'Vos membres vont être impressionnés.', color: 'from-emerald-50 to-green-50 border-emerald-100' },
-        ].map(f => (
-          <div key={f.title} className={`bg-gradient-to-br ${f.color} rounded-2xl border p-5`}>
-            <div className="text-4xl mb-3">{f.icon}</div>
-            <p className="font-black text-slate-800 mb-1">{f.title}</p>
-            <p className="text-sm text-slate-500">{f.desc}</p>
-          </div>
-        ))}
-      </div>
     </div>
   )
 }
