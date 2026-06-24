@@ -94,8 +94,8 @@ export async function POST(req: NextRequest) {
     ])
 
     const entries = accountingEntries['hydra:member']
-    const totalRevenue = entries.filter(e => e.credit > 0).reduce((s, e) => s + e.credit, 0)
-    const totalExpenses = entries.filter(e => e.debit > 0).reduce((s, e) => s + e.debit, 0)
+    const totalRevenue = entries.filter(e => e.amount > 0).reduce((s, e) => s + e.amount, 0)
+    const totalExpenses = entries.filter(e => e.amount < 0).reduce((s, e) => s + Math.abs(e.amount), 0)
 
     const orgData: OrgData = {
       name: apiOrg.name,

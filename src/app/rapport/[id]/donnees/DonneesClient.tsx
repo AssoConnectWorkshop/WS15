@@ -206,11 +206,11 @@ export default function DonneesClient({
   const entries = accountingEntries['hydra:member']
 
   const totalRevenue = entries
-    .filter(e => e.credit > 0)
-    .reduce((s, e) => s + e.credit, 0)
+    .filter(e => e.amount > 0)
+    .reduce((s, e) => s + e.amount, 0)
   const totalExpenses = entries
-    .filter(e => e.debit > 0)
-    .reduce((s, e) => s + e.debit, 0)
+    .filter(e => e.amount < 0)
+    .reduce((s, e) => s + Math.abs(e.amount), 0)
   const surplus = totalRevenue - totalExpenses
 
   return (
@@ -390,8 +390,8 @@ export default function DonneesClient({
                   </div>
                   <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mt-1 mb-3">Répartition des recettes</p>
                   <PieChart slices={[
-                    { label: 'Dons & cotisations', value: entries.filter(e => e.credit > 0 && e.label?.toLowerCase().includes('don')).reduce((s, e) => s + e.credit, 0) || Math.round(totalRevenue * 0.35), color: '#6366f1' },
-                    { label: 'Subventions', value: entries.filter(e => e.credit > 0 && e.label?.toLowerCase().includes('subv')).reduce((s, e) => s + e.credit, 0) || Math.round(totalRevenue * 0.45), color: '#8b5cf6' },
+                    { label: 'Dons & cotisations', value: entries.filter(e => e.amount > 0 && e.label?.toLowerCase().includes('don')).reduce((s, e) => s + e.amount, 0) || Math.round(totalRevenue * 0.35), color: '#6366f1' },
+                    { label: 'Subventions', value: entries.filter(e => e.amount > 0 && e.label?.toLowerCase().includes('subv')).reduce((s, e) => s + e.amount, 0) || Math.round(totalRevenue * 0.45), color: '#8b5cf6' },
                     { label: 'Autres recettes', value: Math.round(totalRevenue * 0.2), color: '#fbbf24' },
                   ]} />
                   <p className="text-xs text-slate-300 mt-2">{entries.length} écritures comptables</p>
