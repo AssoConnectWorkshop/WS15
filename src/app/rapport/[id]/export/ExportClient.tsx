@@ -154,7 +154,7 @@ ${report.sections.map(s => `<h2>${s.title}</h2>${s.content.split('\n').filter(Bo
         @media print {
           body * { visibility: hidden; }
           #rapport-print, #rapport-print * { visibility: visible; }
-          #rapport-print { position: fixed; top: 0; left: 0; width: 100%; max-width: 100%; margin: 0; padding: 0; }
+          #rapport-print { position: absolute; top: 0; left: 0; width: 100%; max-width: 100%; margin: 0; padding: 0; }
         }
       `}</style>
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getReport, updateReport } from '@/lib/report-store'
 import { INTERVIEW_QUESTIONS } from '@/lib/mock-data'
@@ -16,6 +16,96 @@ const ENCOURAGEMENTS = [
   { text: "C'est exactement ce qu'il faut dire ✨", emoji: "✨" },
   { text: "Chef-d'œuvre en cours d'écriture 🎨", emoji: "🎨" },
 ]
+
+// Web Speech API types
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition
+    webkitSpeechRecognition: new () => SpeechRecognition
+  }
+}
+interface SpeechRecognition extends EventTarget {
+  lang: string
+  continuous: boolean
+  interimResults: boolean
+  start(): void
+  stop(): void
+  onresult: ((e: SpeechRecognitionEvent) => void) | null
+  onend: (() => void) | null
+  onerror: ((e: SpeechRecognitionErrorEvent) => void) | null
+}
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList
+}
+interface SpeechRecognitionResultList {
+  [index: number]: SpeechRecognitionResult
+  length: number
+}
+interface SpeechRecognitionResult {
+  [index: number]: SpeechRecognitionAlternative
+  isFinal: boolean
+}
+interface SpeechRecognitionAlternative {
+  transcript: string
+}
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string
+}
+
+function VoiceButton({ onTranscript }: { onTranscript: (text: string) => void }) {
+  const [listening, setListening] = useState(false)
+  const [supported, setSupported] = useState(false)
+  const recRef = useRef<SpeechRecognition | null>(null)
+
+  useEffect(() => {
+    setSupported(!!(window.SpeechRecognition || window.webkitSpeechRecognition))
+  }, [])
+
+  function toggle() {
+    if (listening) {
+      recRef.current?.stop()
+      return
+    }
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    const rec = new SR()
+    rec.lang = 'fr-FR'
+    rec.continuous = true
+    rec.interimResults = false
+    rec.onresult = (e) => {
+      const transcript = Array.from({ length: e.results.length }, (_, i) => e.results[i][0].transcript).join(' ')
+      onTranscript(transcript)
+    }
+    rec.onend = () => setListening(false)
+    rec.onerror = () => setListening(false)
+    recRef.current = rec
+    rec.start()
+    setListening(true)
+  }
+
+  if (!supported) return null
+
+  return (
+    <button
+      type="button"
+      onClick={toggle}
+      title={listening ? 'Cliquez pour arrêter' : 'Répondre à la voix'}
+      className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
+        listening
+          ? 'bg-red-500 text-white shadow-lg shadow-red-200 animate-pulse'
+          : 'bg-indigo-50 text-indigo-600 border border-indigo-200 hover:bg-indigo-100'
+      }`}
+    >
+      {listening ? (
+        <>
+          <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+          Enregistrement… (cliquez pour finir)
+        </>
+      ) : (
+        <>🎙️ Répondre à la voix</>
+      )}
+    </button>
+  )
+}
 
 const MILESTONE_MESSAGES: Record<number, string> = {
   4: "Mi-chemin ! Vous êtes en feu 🔥",
@@ -61,6 +151,13 @@ export default function InterviewPage() {
       if (answeredCount === INTERVIEW_QUESTIONS.length) setShowConfetti(true)
       setTimeout(() => setMilestone(''), 4000)
     }
+  }
+
+  function handleVoiceTranscript(questionId: string, transcript: string) {
+    const current = answers[questionId] ?? ''
+    const joined = current ? `${current} ${transcript}` : transcript
+    saveAnswer(questionId, joined)
+    handleBlur(questionId)
   }
 
   function handleNext() {
@@ -138,10 +235,11 @@ export default function InterviewPage() {
             className="w-full border-2 border-slate-100 focus:border-indigo-300 rounded-xl p-4 text-slate-700 placeholder-slate-300 focus:outline-none resize-none text-base transition-colors"
           />
 
-          {/* Toast encouragement */}
-          <div className={`mt-3 flex items-center gap-2 text-sm font-semibold text-indigo-600 transition-all duration-300 ${toast ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-1'}`}>
-            {toast && <><span className="text-lg">{toast.emoji}</span> {toast.text}</>}
-            {!toast && <span>&nbsp;</span>}
+          <div className="flex items-center justify-between mt-3">
+            <VoiceButton onTranscript={(t) => handleVoiceTranscript(question.id, t)} />
+            <div className={`flex items-center gap-2 text-sm font-semibold text-indigo-600 transition-all duration-300 ${toast ? 'opacity-100' : 'opacity-0'}`}>
+              {toast && <><span className="text-lg">{toast.emoji}</span> {toast.text}</>}
+            </div>
           </div>
         </div>
       </div>
