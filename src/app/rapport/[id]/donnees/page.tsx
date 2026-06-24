@@ -9,5 +9,12 @@ export default async function DonneesPage() {
     getContacts(),
   ])
 
-  return <DonneesClient stats={stats} contacts={contacts} />
+  return (
+    <>
+      <p className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded mb-2">
+        🔌 API live — {contacts['hydra:totalItems']} contacts · {stats.people} personnes
+      </p>
+      <DonneesClient stats={stats} contacts={contacts} />
+    </>
+  )
 }
