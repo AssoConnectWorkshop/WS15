@@ -3,7 +3,13 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getReport, updateReport, ContributorStatus } from '@/lib/report-store'
-import { SECTION_CONTRIBUTORS } from '@/lib/mock-data'
+
+const SECTIONS = [
+  { id: "jardinage", name: "Activités jardinage", icon: "🌱" },
+  { id: "ateliers", name: "Ateliers & formations", icon: "📚" },
+  { id: "communication", name: "Communication", icon: "📢" },
+  { id: "benevoles", name: "Coordination bénévoles", icon: "🤝" },
+]
 
 const STATUS_CONFIG: Record<ContributorStatus, { label: string; color: string; bg: string; border: string }> = {
   pending: { label: 'En attente', color: 'text-slate-500', bg: 'bg-slate-100', border: 'border-slate-200' },
@@ -52,7 +58,6 @@ export default function ContributeursPage() {
         <p className="text-slate-500 mt-1">Chaque responsable contribue à sa section. Ensemble, le rapport se construit tout seul !</p>
       </div>
 
-      {/* Fun banner */}
       {completedCount === 0 && (
         <div className="bg-violet-50 border border-violet-100 rounded-2xl p-4 flex items-start gap-3">
           <span className="text-2xl">🚀</span>
@@ -73,33 +78,28 @@ export default function ContributeursPage() {
         </div>
       )}
 
-      {/* Progress */}
       <div className="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-4">
         <div className="flex-1 bg-slate-100 rounded-full h-3">
-          <div className="bg-indigo-500 h-3 rounded-full transition-all duration-500" style={{ width: `${(completedCount / SECTION_CONTRIBUTORS.length) * 100}%` }} />
+          <div className="bg-indigo-500 h-3 rounded-full transition-all duration-500" style={{ width: `${(completedCount / SECTIONS.length) * 100}%` }} />
         </div>
-        <span className="text-sm font-bold text-slate-600 shrink-0">{completedCount} / {SECTION_CONTRIBUTORS.length}</span>
+        <span className="text-sm font-bold text-slate-600 shrink-0">{completedCount} / {SECTIONS.length}</span>
       </div>
 
-      {/* Contributor cards */}
       <div className="grid gap-3">
-        {SECTION_CONTRIBUTORS.map(contrib => {
-          const status = statuses[contrib.id] ?? 'pending'
+        {SECTIONS.map(section => {
+          const status = statuses[section.id] ?? 'pending'
           const cfg = STATUS_CONFIG[status]
-          const isOpen = openSection === contrib.id
+          const isOpen = openSection === section.id
 
           return (
-            <div key={contrib.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${status === 'complete' ? 'border-emerald-200' : 'border-slate-200'}`}>
+            <div key={section.id} className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all ${status === 'complete' ? 'border-emerald-200' : 'border-slate-200'}`}>
               <button
-                onClick={() => setOpenSection(isOpen ? null : contrib.id)}
+                onClick={() => setOpenSection(isOpen ? null : section.id)}
                 className="w-full p-5 flex items-center justify-between gap-4 text-left hover:bg-slate-50 transition-colors"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-3xl">{contrib.icon}</span>
-                  <div>
-                    <p className="font-semibold text-slate-800">{contrib.name}</p>
-                    <p className="text-sm text-slate-400">{contrib.leader}</p>
-                  </div>
+                  <span className="text-3xl">{section.icon}</span>
+                  <p className="font-semibold text-slate-800">{section.name}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <span className={`text-xs font-semibold px-3 py-1.5 rounded-full border ${cfg.bg} ${cfg.color} ${cfg.border}`}>
@@ -112,11 +112,11 @@ export default function ContributeursPage() {
               {isOpen && (
                 <div className="border-t border-slate-100 p-5 space-y-4 bg-slate-50">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">Notes de {contrib.leader.split(' ')[0]}</label>
+                    <label className="block text-sm font-semibold text-slate-600 mb-1.5">Notes sur cette section</label>
                     <textarea
-                      value={notes[contrib.id] ?? ''}
-                      onChange={e => saveNote(contrib.id, e.target.value)}
-                      placeholder={`Résumé des activités, chiffres clés, moments marquants de ${contrib.name.toLowerCase()}…`}
+                      value={notes[section.id] ?? ''}
+                      onChange={e => saveNote(section.id, e.target.value)}
+                      placeholder={`Résumé des activités, chiffres clés, moments marquants de ${section.name.toLowerCase()}…`}
                       rows={4}
                       className="w-full border border-slate-200 rounded-xl p-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white resize-none"
                     />
@@ -127,7 +127,7 @@ export default function ContributeursPage() {
                       {(['pending', 'in_progress', 'complete'] as ContributorStatus[]).map(s => (
                         <button
                           key={s}
-                          onClick={() => setStatus(contrib.id, s)}
+                          onClick={() => setStatus(section.id, s)}
                           className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all
                             ${status === s ? `${STATUS_CONFIG[s].bg} ${STATUS_CONFIG[s].color} ${STATUS_CONFIG[s].border}` : 'bg-white border-slate-200 text-slate-400 hover:border-slate-300'}`}
                         >
