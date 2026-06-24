@@ -15,6 +15,46 @@ export type Organization = {
   url: string;
 };
 
+export type StatsCrm = {
+  "@id": string;
+  "@type": string;
+  totalContacts: number;
+  totalPeople: number;
+  totalStructures: number;
+};
+
+export type CollectionResponse<T> = {
+  "@context": string;
+  "@id": string;
+  "@type": string;
+  "hydra:totalItems": number;
+  "hydra:member": T[];
+};
+
+export type Collect = {
+  "@id": string;
+  "@type": string;
+  name: string;
+  status: string;
+};
+
+export type Nonprofit = {
+  "@id": string;
+  "@type": string;
+  name: string;
+  siret?: string;
+  rna?: string;
+};
+
+export type AccountingYear = {
+  "@id": string;
+  "@type": string;
+  label: string;
+  startDate: string;
+  endDate: string;
+  status: string;
+};
+
 async function request<T>(path: string): Promise<T> {
   const token = process.env.ASSOCONNECT_API_KEY;
   if (!token) throw new Error("ASSOCONNECT_API_KEY is not set");
@@ -34,7 +74,28 @@ async function request<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-export function getOrganization(ulid = process.env.ASSOCONNECT_ORGANIZATION_ULID) {
+function orgUlid() {
+  const ulid = process.env.ASSOCONNECT_ORGANIZATION_ULID;
   if (!ulid) throw new Error("ASSOCONNECT_ORGANIZATION_ULID is not set");
+  return ulid;
+}
+
+export function getOrganization(ulid = orgUlid()) {
   return request<Organization>(`/organizations/${ulid}`);
+}
+
+export function getStatsCrm(ulid = orgUlid()) {
+  return request<StatsCrm>(`/organizations/${ulid}/stats_crm`);
+}
+
+export function getCollects(ulid = orgUlid()) {
+  return request<CollectionResponse<Collect>>(`/organizations/${ulid}/collects`);
+}
+
+export function getNonprofit(ulid = orgUlid()) {
+  return request<Nonprofit>(`/organizations/${ulid}/nonprofit`);
+}
+
+export function getAccountingYears(nonprofitId: string) {
+  return request<CollectionResponse<AccountingYear>>(`/nonprofits/${nonprofitId}/accounting_years`);
 }
