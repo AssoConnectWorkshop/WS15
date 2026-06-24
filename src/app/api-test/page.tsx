@@ -92,7 +92,7 @@ export default async function ApiTestPage() {
       <div className="mt-8 space-y-4">
         {apiResults.map(
           (r) =>
-            r.data && (
+            !!r.data && (
               <details key={r.label}>
                 <summary className="cursor-pointer font-semibold">{r.label}</summary>
                 <pre className="mt-2 overflow-x-auto rounded-md bg-gray-100 p-4 text-xs">
