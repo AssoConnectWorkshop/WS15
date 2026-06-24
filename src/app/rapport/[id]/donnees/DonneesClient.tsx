@@ -207,10 +207,10 @@ export default function DonneesClient({
 
   const totalRevenue = entries
     .filter(e => e.type === 'CREDIT' && e.account.accountNumber >= 700000 && e.account.accountNumber < 800000)
-    .reduce((s, e) => s + Number(e.amount), 0)
+    .reduce((s, e) => s + Number(e.amount) / 100, 0)
   const totalExpenses = entries
     .filter(e => e.type === 'DEBIT' && e.account.accountNumber >= 600000 && e.account.accountNumber < 700000)
-    .reduce((s, e) => s + Number(e.amount), 0)
+    .reduce((s, e) => s + Number(e.amount) / 100, 0)
   const surplus = totalRevenue - totalExpenses
   const totalVolume = totalRevenue + totalExpenses
 
@@ -398,8 +398,8 @@ export default function DonneesClient({
                     const slices = sourceEntries.reduce<{ label: string; value: number; color: string }[]>((acc, e) => {
                       const name = e.account.displayName.replace(/^\d+ - /, '')
                       const existing = acc.find(s => s.label === name)
-                      if (existing) { existing.value += Number(e.amount); return acc }
-                      return [...acc, { label: name, value: Number(e.amount), color: COLORS[acc.length % COLORS.length] }]
+                      if (existing) { existing.value += Number(e.amount) / 100; return acc }
+                      return [...acc, { label: name, value: Number(e.amount) / 100, color: COLORS[acc.length % COLORS.length] }]
                     }, [])
                     if (slices.length === 0) return null
                     return (
