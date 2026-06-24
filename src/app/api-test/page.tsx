@@ -4,6 +4,7 @@ import {
   getCollects,
   getNonprofit,
   getAccountingYears,
+  getAccountingEntries,
 } from "@/lib/assoconnect";
 
 export const dynamic = "force-dynamic";
@@ -56,6 +57,10 @@ export default async function ApiTestPage() {
       const nonprofitId = nonprofit["@id"].split("/").pop()!;
       const years = await getAccountingYears(nonprofitId);
       return { nonprofit, accountingYears: years["hydra:member"] };
+    }),
+    run("GET /organizations/{ulid}/accounting_entries", async () => {
+      const res = await getAccountingEntries();
+      return { total: res["hydra:totalItems"], sample: res["hydra:member"].slice(0, 3) };
     }),
   ]);
 
