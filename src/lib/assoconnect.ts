@@ -117,3 +117,37 @@ export function getContacts(ulid = orgUlid(), page = 1, perPage = 30) {
     `/organizations/${ulid}/contacts?page=${page}&itemsPerPage=${perPage}&order[createdAt]=desc`
   );
 }
+
+export type EventCollect = {
+  "@id": string;
+  "@type": string;
+  id: string;
+  name: string;
+  status: string;
+  bookingStartsAt: string | null;
+  bookingEndsAt: string | null;
+  availability: string;
+};
+
+export type AccountingEntry = {
+  "@id": string;
+  "@type": string;
+  id: string;
+  label: string;
+  date: string;
+  amount: number;
+  debit: number;
+  credit: number;
+};
+
+export function getEventCollects(ulid = orgUlid()) {
+  return request<CollectionResponse<EventCollect>>(
+    `/organizations/${ulid}/collects?type=EVENT`
+  );
+}
+
+export function getAccountingEntries(ulid = orgUlid()) {
+  return request<CollectionResponse<AccountingEntry>>(
+    `/organizations/${ulid}/accounting_entries?itemsPerPage=50`
+  );
+}

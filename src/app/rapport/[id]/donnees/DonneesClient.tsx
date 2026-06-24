@@ -3,17 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { getReport, updateReport } from '@/lib/report-store'
-import type { StatsCrm, Contact, CollectionResponse } from '@/lib/assoconnect'
-import { DEMO_ASSOCIATION } from '@/lib/mock-data'
-
-const CATEGORY_LABELS: Record<string, string> = {
-  activité: '🌿 Activité',
-  formation: '📚 Formation',
-  événement: '🎉 Événement',
-  sortie: '🚶 Sortie',
-  chantier: '🔨 Chantier',
-  gouvernance: '📋 Gouvernance',
-}
+import type { Organization, StatsCrm, Contact, EventCollect, AccountingEntry, CollectionResponse } from '@/lib/assoconnect'
 
 function Card({ title, icon, children, badge }: { title: string; icon: string; children: React.ReactNode; badge?: string }) {
   return (
@@ -54,16 +44,23 @@ function ContactRow({ contact }: { contact: Contact }) {
 type ChatMessage = { role: 'user' | 'assistant'; text: string }
 
 const CHAT_SUGGESTIONS = [
-  "Quel est notre taux de croissance des membres ?",
-  "Combien d'heures bénévoles au total ?",
-  "Quelle part des revenus vient des subventions ?",
-  "Quel événement a eu le plus de succès ?",
+  "Combien avons-nous de membres ?",
+  "Quels événements avons-nous organisés ?",
+  "Quel est notre bilan financier ?",
+  "Résume nos données pour le rapport",
 ]
 
-function ChatTab() {
-  const data = DEMO_ASSOCIATION
+function ChatTab({ orgName, totalContacts, inSubscription, eventCount, totalRevenue, totalExpenses }: {
+  orgName: string
+  totalContacts: number
+  inSubscription: number
+  eventCount: number
+  totalRevenue: number
+  totalExpenses: number
+}) {
+  const summary = `Association: ${orgName}. Membres: ${totalContacts} (${inSubscription} en adhésion). Événements: ${eventCount}. Recettes: ${totalRevenue}€. Dépenses: ${totalExpenses}€.`
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'assistant', text: "Bonjour ! Je connais toutes vos données AssoConnect. Posez-moi n'importe quelle question sur vos membres, événements, finances ou bénévoles 🌱" }
+    { role: 'assistant', text: `Bonjour ! Je connais toutes les données de ${orgName}. Posez-moi n'importe quelle question 🌱` }
   ])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -82,7 +79,7 @@ function ChatTab() {
       const res = await fetch('/api/rapport/chat-data', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text, data }),
+        body: JSON.stringify({ question: text, data: summary }),
       })
       const json = await res.json() as { answer: string }
       setMessages(m => [...m, { role: 'assistant', text: json.answer }])
@@ -100,17 +97,12 @@ function ChatTab() {
         <span className="font-semibold text-slate-700 text-sm">Assistant données AssoConnect</span>
         <span className="ml-auto text-xs text-indigo-400 bg-indigo-100 px-2 py-0.5 rounded-full">IA</span>
       </div>
-
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`max-w-xs rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${
-              msg.role === 'user'
-                ? 'bg-indigo-600 text-white rounded-br-sm'
-                : 'bg-slate-100 text-slate-700 rounded-bl-sm'
-            }`}>
-              {msg.text}
-            </div>
+              msg.role === 'user' ? 'bg-indigo-600 text-white rounded-br-sm' : 'bg-slate-100 text-slate-700 rounded-bl-sm'
+            }`}>{msg.text}</div>
           </div>
         ))}
         {loading && (
@@ -124,7 +116,6 @@ function ChatTab() {
         )}
         <div ref={bottomRef} />
       </div>
-
       {messages.length <= 1 && (
         <div className="px-4 pb-2 flex flex-wrap gap-2">
           {CHAT_SUGGESTIONS.map(s => (
@@ -134,7 +125,6 @@ function ChatTab() {
           ))}
         </div>
       )}
-
       <form onSubmit={e => { e.preventDefault(); send(input) }} className="border-t border-slate-100 p-3 flex gap-2">
         <input
           value={input}
@@ -151,11 +141,17 @@ function ChatTab() {
 }
 
 export default function DonneesClient({
+  org,
   stats,
   contacts,
+  eventCollects,
+  accountingEntries,
 }: {
+  org: Organization
   stats: StatsCrm
   contacts: CollectionResponse<Contact>
+  eventCollects: CollectionResponse<EventCollect>
+  accountingEntries: CollectionResponse<AccountingEntry>
 }) {
   const params = useParams()
   const router = useRouter()
@@ -172,30 +168,26 @@ export default function DonneesClient({
     router.push(`/rapport/${id}/interview`)
   }
 
-  const data = DEMO_ASSOCIATION
-  const totalParticipants = data.events.reduce((s, e) => s + e.participants, 0)
-  const totalRevenue = Object.values(data.finance.revenue).reduce((s, v) => s + v, 0)
-  const totalExpenses = Object.values(data.finance.expenses).reduce((s, v) => s + v, 0)
-  const maxRevItem = Math.max(...Object.values(data.finance.revenue))
-
   const totalContacts = contacts['hydra:totalItems']
-  const sample = contacts['hydra:member'].slice(0, 5)
+  const contactSample = contacts['hydra:member'].slice(0, 5)
+  const events = eventCollects['hydra:member']
+  const entries = accountingEntries['hydra:member']
 
-  const revenueEntries = [
-    { label: 'Dons', value: data.finance.revenue.donations, color: 'bg-indigo-500' },
-    { label: 'Subventions', value: data.finance.revenue.grants, color: 'bg-violet-500' },
-    { label: 'Cotisations', value: data.finance.revenue.membershipFees, color: 'bg-amber-400' },
-    { label: 'Autres', value: data.finance.revenue.other, color: 'bg-slate-300' },
-  ]
+  const totalRevenue = entries
+    .filter(e => e.credit > 0)
+    .reduce((s, e) => s + e.credit, 0)
+  const totalExpenses = entries
+    .filter(e => e.debit > 0)
+    .reduce((s, e) => s + e.debit, 0)
+  const surplus = totalRevenue - totalExpenses
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-slate-900">Vos données 📊</h1>
-        <p className="text-slate-500 mt-1">On a tout récupéré depuis AssoConnect. Vérifiez, explorez, posez des questions !</p>
+        <p className="text-slate-500 mt-1">{org.name} · importé depuis AssoConnect</p>
       </div>
 
-      {/* Tabs */}
       <div className="flex gap-1 bg-slate-100 p-1 rounded-xl w-fit">
         <button
           onClick={() => setTab('data')}
@@ -211,25 +203,32 @@ export default function DonneesClient({
         </button>
       </div>
 
-      {tab === 'chat' && <ChatTab />}
+      {tab === 'chat' && (
+        <ChatTab
+          orgName={org.name}
+          totalContacts={totalContacts}
+          inSubscription={stats.inSubscription}
+          eventCount={events.length}
+          totalRevenue={totalRevenue}
+          totalExpenses={totalExpenses}
+        />
+      )}
 
       {tab === 'data' && (
         <>
-          <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 flex items-start gap-3">
-            <span className="text-2xl">🎯</span>
-            <div>
-              <p className="font-semibold text-indigo-800">Données importées automatiquement</p>
-              <p className="text-indigo-600 text-sm">Membres, événements, finances et bénévoles sont prêts. Basculez sur &quot;Chat IA&quot; pour poser des questions sur vos chiffres.</p>
-            </div>
-          </div>
-
           {/* KPI strip */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { label: 'Membres', value: totalContacts, sub: `${stats.inSubscription ?? stats.people} en adhésion`, icon: '👥', color: 'text-indigo-600' },
-              { label: 'Bénévoles', value: data.volunteers.total, sub: `${data.volunteers.active} très actifs`, icon: '🙌', color: 'text-violet-600' },
-              { label: 'Événements', value: data.events.length, sub: `${totalParticipants} participants`, icon: '📅', color: 'text-amber-600' },
-              { label: 'Excédent', value: `+${data.finance.surplus.toLocaleString('fr-FR')} €`, sub: `sur ${totalRevenue.toLocaleString('fr-FR')} € de recettes`, icon: '💰', color: 'text-emerald-600' },
+              { label: 'Membres', value: totalContacts, sub: `${stats.inSubscription} en adhésion`, icon: '👥', color: 'text-indigo-600' },
+              { label: 'Contacts CRM', value: stats.people, sub: `${stats.structures} structures`, icon: '🙌', color: 'text-violet-600' },
+              { label: 'Événements', value: events.length, sub: events.length === 0 ? 'Aucun enregistré' : `${events.filter(e => e.status === 'PUBLISHED').length} publiés`, icon: '📅', color: 'text-amber-600' },
+              {
+                label: surplus >= 0 ? 'Excédent' : 'Déficit',
+                value: `${surplus >= 0 ? '+' : ''}${surplus.toLocaleString('fr-FR')} €`,
+                sub: entries.length === 0 ? 'Aucune écriture' : `sur ${totalRevenue.toLocaleString('fr-FR')} € de recettes`,
+                icon: '💰',
+                color: surplus >= 0 ? 'text-emerald-600' : 'text-red-500',
+              },
             ].map(k => (
               <div key={k.label} className="bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
                 <span className="text-xl">{k.icon}</span>
@@ -240,7 +239,7 @@ export default function DonneesClient({
           </div>
 
           <div className="grid md:grid-cols-2 gap-4">
-            {/* Membres — données réelles API */}
+            {/* Membres */}
             <Card title="Membres" icon="👥" badge="Importé">
               <div className="flex items-end gap-4 mb-4">
                 <div>
@@ -248,109 +247,97 @@ export default function DonneesClient({
                   <p className="text-sm text-slate-500">contacts dans le CRM</p>
                 </div>
                 <div className="text-right pb-1">
-                  <p className="text-lg font-bold text-emerald-600">{stats.inSubscription ?? stats.people}</p>
+                  <p className="text-lg font-bold text-emerald-600">{stats.inSubscription}</p>
                   <p className="text-xs text-slate-400">en adhésion</p>
                 </div>
               </div>
-              <div className="space-y-0">
-                {sample.map((c) => (
+              <div>
+                {contactSample.map((c) => (
                   <ContactRow key={c.id} contact={c} />
                 ))}
                 {totalContacts > 5 && (
-                  <p className="text-xs text-slate-400 pt-2 text-center">
-                    + {totalContacts - 5} autres contacts
-                  </p>
+                  <p className="text-xs text-slate-400 pt-2 text-center">+ {totalContacts - 5} autres contacts</p>
                 )}
               </div>
             </Card>
 
-            <Card title="Bénévoles" icon="🙌" badge="Importé">
+            {/* Bénévoles — pas d'endpoint dédié, on affiche les personnes du CRM */}
+            <Card title="Personnes CRM" icon="🙌" badge="Importé">
               <div className="flex items-end gap-4 mb-4">
                 <div>
-                  <p className="text-4xl font-bold text-slate-900">{data.volunteers.total}</p>
-                  <p className="text-sm text-slate-500">bénévoles au total</p>
+                  <p className="text-4xl font-bold text-slate-900">{stats.people}</p>
+                  <p className="text-sm text-slate-500">personnes</p>
                 </div>
                 <div className="text-right pb-1">
-                  <p className="text-lg font-bold text-amber-500">{data.volunteers.active}</p>
-                  <p className="text-xs text-slate-400">très actifs</p>
+                  <p className="text-lg font-bold text-violet-600">{stats.structures}</p>
+                  <p className="text-xs text-slate-400">structures</p>
                 </div>
               </div>
-              <div className="space-y-2">
-                {data.topVolunteers.slice(0, 3).map(v => (
-                  <div key={v.name} className="flex items-center justify-between py-1.5 border-b border-slate-100 last:border-0">
-                    <div>
-                      <p className="text-sm font-medium text-slate-700">{v.name}</p>
-                      <p className="text-xs text-slate-400">{v.role}</p>
-                    </div>
-                    <span className="text-sm font-bold text-indigo-600">{v.hours}h</span>
-                  </div>
-                ))}
+              <div className="bg-violet-50 rounded-xl p-3 text-sm text-violet-700 border border-violet-100">
+                <p className="font-medium">Données bénévoles</p>
+                <p className="text-xs mt-0.5 text-violet-500">Les heures bénévoles seront renseignées dans l&apos;entretien.</p>
               </div>
             </Card>
 
+            {/* Événements */}
             <Card title="Événements" icon="📅" badge="Importé">
-              <div className="flex gap-6 mb-4">
-                <div>
-                  <p className="text-4xl font-bold text-slate-900">{data.events.length}</p>
-                  <p className="text-sm text-slate-500">événements</p>
+              {events.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-3xl mb-2">📭</p>
+                  <p className="text-slate-500 text-sm">Aucun événement enregistré dans AssoConnect</p>
+                  <p className="text-xs text-slate-400 mt-1">Les événements seront décrits dans l&apos;entretien.</p>
                 </div>
-                <div>
-                  <p className="text-4xl font-bold text-slate-900">{totalParticipants.toLocaleString('fr-FR')}</p>
-                  <p className="text-sm text-slate-500">participants</p>
-                </div>
-              </div>
-              <div className="space-y-1.5 max-h-44 overflow-y-auto">
-                {data.events.map(ev => (
-                  <div key={ev.name} className="flex items-center gap-2 text-sm">
-                    <span className="text-xs shrink-0">{CATEGORY_LABELS[ev.category]?.split(' ')[0] ?? '•'}</span>
-                    <span className="text-slate-700 truncate flex-1 min-w-0">{ev.name}</span>
-                    <div className="w-20 bg-slate-100 rounded-full h-1.5 shrink-0">
-                      <div className="bg-amber-400 h-1.5 rounded-full" style={{ width: `${Math.min((ev.participants / totalParticipants) * 100 * 3, 100)}%` }} />
-                    </div>
-                    <span className="text-slate-400 shrink-0 text-xs w-8 text-right">{ev.participants}</span>
+              ) : (
+                <>
+                  <div className="mb-3">
+                    <p className="text-4xl font-bold text-slate-900">{events.length}</p>
+                    <p className="text-sm text-slate-500">collectes événements</p>
                   </div>
-                ))}
-              </div>
+                  <div className="space-y-1.5 max-h-44 overflow-y-auto">
+                    {events.map(ev => (
+                      <div key={ev.id} className="flex items-center justify-between text-sm py-1 border-b border-slate-100 last:border-0">
+                        <span className="text-slate-700 truncate flex-1">{ev.name}</span>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ml-2 shrink-0 ${ev.status === 'PUBLISHED' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+                          {ev.status === 'PUBLISHED' ? 'publié' : ev.status.toLowerCase()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </Card>
 
+            {/* Finances */}
             <Card title="Bilan financier" icon="💰" badge="Importé">
-              <div className="grid grid-cols-3 gap-3 mb-4">
-                <div className="text-center bg-indigo-50 rounded-xl p-3">
-                  <p className="text-lg font-black text-indigo-700">{totalRevenue.toLocaleString('fr-FR')} €</p>
-                  <p className="text-xs text-slate-500">Recettes</p>
+              {entries.length === 0 ? (
+                <div className="text-center py-6">
+                  <p className="text-3xl mb-2">📒</p>
+                  <p className="text-slate-500 text-sm">Aucune écriture comptable</p>
+                  <p className="text-xs text-slate-400 mt-1">Le bilan sera renseigné dans l&apos;entretien.</p>
                 </div>
-                <div className="text-center bg-slate-50 rounded-xl p-3">
-                  <p className="text-lg font-black text-slate-700">{totalExpenses.toLocaleString('fr-FR')} €</p>
-                  <p className="text-xs text-slate-500">Dépenses</p>
-                </div>
-                <div className="text-center bg-emerald-50 rounded-xl p-3">
-                  <p className="text-lg font-black text-emerald-600">+{data.finance.surplus.toLocaleString('fr-FR')} €</p>
-                  <p className="text-xs text-slate-500">Excédent</p>
-                </div>
-              </div>
-              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-2">Répartition des recettes</p>
-              {revenueEntries.map(({ label, value, color }) => (
-                <div key={label} className="flex items-center gap-2 mb-1.5">
-                  <span className="text-xs text-slate-500 w-20 shrink-0">{label}</span>
-                  <div className="flex-1 bg-slate-100 rounded-full h-2.5">
-                    <div className={`${color} h-2.5 rounded-full transition-all duration-700`} style={{ width: `${(value / maxRevItem) * 100}%` }} />
+              ) : (
+                <>
+                  <div className="grid grid-cols-3 gap-3 mb-4">
+                    <div className="text-center bg-indigo-50 rounded-xl p-3">
+                      <p className="text-lg font-black text-indigo-700">{totalRevenue.toLocaleString('fr-FR')} €</p>
+                      <p className="text-xs text-slate-500">Recettes</p>
+                    </div>
+                    <div className="text-center bg-slate-50 rounded-xl p-3">
+                      <p className="text-lg font-black text-slate-700">{totalExpenses.toLocaleString('fr-FR')} €</p>
+                      <p className="text-xs text-slate-500">Dépenses</p>
+                    </div>
+                    <div className={`text-center rounded-xl p-3 ${surplus >= 0 ? 'bg-emerald-50' : 'bg-red-50'}`}>
+                      <p className={`text-lg font-black ${surplus >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                        {surplus >= 0 ? '+' : ''}{surplus.toLocaleString('fr-FR')} €
+                      </p>
+                      <p className="text-xs text-slate-500">Résultat</p>
+                    </div>
                   </div>
-                  <span className="text-xs font-medium text-slate-600 w-20 text-right">{value.toLocaleString('fr-FR')} €</span>
-                </div>
-              ))}
+                  <p className="text-xs text-slate-400">{entries.length} écritures comptables</p>
+                </>
+              )}
             </Card>
           </div>
-
-          <Card title="Partenaires" icon="🤝" badge="Importé">
-            <div className="flex flex-wrap gap-3">
-              {data.partners.map(p => (
-                <div key={p.name} className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2">
-                  <span className="font-medium text-slate-700 text-sm">{p.name}</span>
-                  <span className="text-xs text-slate-400 bg-white border border-slate-100 rounded-full px-2 py-0.5">{p.type}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
         </>
       )}
 
