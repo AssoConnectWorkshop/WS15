@@ -31,6 +31,18 @@ export type CollectionResponse<T> = {
   "hydra:member": T[];
 };
 
+export type Contact = {
+  "@id": string;
+  "@type": string;
+  id: string;
+  firstName?: string;
+  lastName?: string;
+  companyName?: string;
+  email?: string;
+  createdAt?: string;
+  type: "PERSON" | "STRUCTURE";
+};
+
 export type Collect = {
   "@id": string;
   "@type": string;
@@ -98,4 +110,10 @@ export function getNonprofit(ulid = orgUlid()) {
 
 export function getAccountingYears(nonprofitId: string) {
   return request<CollectionResponse<AccountingYear>>(`/nonprofits/${nonprofitId}/accounting_years`);
+}
+
+export function getContacts(ulid = orgUlid(), page = 1, perPage = 30) {
+  return request<CollectionResponse<Contact>>(
+    `/organizations/${ulid}/contacts?page=${page}&itemsPerPage=${perPage}&order[createdAt]=desc`
+  );
 }
