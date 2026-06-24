@@ -68,12 +68,20 @@ export default function EditeurPage() {
         </div>
         <div className="flex items-center gap-3">
           {savedFlash && <span className="text-sm text-emerald-600 font-medium animate-pulse">✓ Sauvegardé</span>}
-          <button
-            onClick={() => setPreview(p => !p)}
-            className={`px-4 py-2 rounded-xl border font-medium text-sm transition-colors ${preview ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'}`}
-          >
-            {preview ? '✏️ Éditer' : '👁 Aperçu'}
-          </button>
+          <div className="flex items-center gap-2 bg-slate-100 rounded-xl p-1">
+            <button
+              onClick={() => setPreview(false)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${!preview ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              ✏️ Éditer
+            </button>
+            <button
+              onClick={() => setPreview(true)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${preview ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+            >
+              👁 Aperçu
+            </button>
+          </div>
         </div>
       </div>
 
