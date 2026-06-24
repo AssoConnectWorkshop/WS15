@@ -18,9 +18,9 @@ export type Organization = {
 export type StatsCrm = {
   "@id": string;
   "@type": string;
-  totalContacts: number;
-  totalPeople: number;
-  totalStructures: number;
+  people: number;
+  structures: number;
+  inSubscription: number;
 };
 
 export type CollectionResponse<T> = {
