@@ -33,7 +33,7 @@ export type Report = {
   createdAt: string
 }
 
-const STORAGE_KEY = 'ws15_activity_reports'
+const STORAGE_KEY = 'ws4_activity_reports'
 
 export function getReports(): Report[] {
   if (typeof window === 'undefined') return []
