@@ -168,23 +168,33 @@ export default function RapportDashboardClient({ orgName, members, people, struc
         </div>
       </div>
 
-      {/* Stats strip */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Membres', value: members.toLocaleString('fr-FR'), icon: '👥', sub: `${people.toLocaleString('fr-FR')} contacts CRM`, color: 'text-indigo-600' },
-          { label: 'Personnes CRM', value: people.toLocaleString('fr-FR'), icon: '🙌', sub: `${structures.toLocaleString('fr-FR')} structures`, color: 'text-violet-600' },
-          { label: 'Événements', value: eventCount.toLocaleString('fr-FR'), icon: '📅', sub: 'cette année 🎉', color: 'text-amber-600' },
-          { label: 'Résultat', value: surplusLabel, icon: '💰', sub: surplus >= 0 ? 'excédent 💚' : 'déficit', color: surplus >= 0 ? 'text-emerald-600' : 'text-red-600' },
-        ].map(stat => (
-          <div key={stat.label} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-2xl">{stat.icon}</span>
-              <span className="text-xs font-bold text-slate-300 uppercase tracking-wide">{stat.label}</span>
-            </div>
-            <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
-            <p className="text-xs text-slate-400 mt-1">{stat.sub}</p>
+      {/* Value prop + stats */}
+      <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-3xl p-6 space-y-5">
+        <div>
+          <div className="inline-flex items-center gap-1.5 bg-emerald-100 text-emerald-700 text-xs font-black px-3 py-1 rounded-full mb-3">
+            <span>⚡</span> Vos données AssoConnect, en direct
           </div>
-        ))}
+          <h2 className="text-xl font-black text-slate-900 mb-1">Ces données s&apos;intègrent directement dans votre rapport</h2>
+          <p className="text-slate-500 text-sm">Tout ce que vous voyez ci-dessous sera automatiquement cité et mis en forme dans les bonnes sections du rapport — zéro ressaisie.</p>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Membres actifs', value: members.toLocaleString('fr-FR'), icon: '👥', section: 'Section Membres', color: 'bg-indigo-100 text-indigo-700', dot: 'bg-indigo-400' },
+            { label: 'Contacts CRM', value: people.toLocaleString('fr-FR'), icon: '🙌', section: 'Section Membres', color: 'bg-violet-100 text-violet-700', dot: 'bg-violet-400' },
+            { label: 'Événements', value: eventCount.toLocaleString('fr-FR'), icon: '📅', section: 'Section Activités', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-400' },
+            { label: 'Résultat', value: surplusLabel, icon: '💰', section: 'Section Finances', color: surplus >= 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700', dot: surplus >= 0 ? 'bg-emerald-400' : 'bg-red-400' },
+          ].map(stat => (
+            <div key={stat.label} className="bg-white rounded-2xl p-4 shadow-sm flex flex-col gap-1">
+              <span className="text-xl">{stat.icon}</span>
+              <p className="text-2xl font-black text-slate-900 leading-none">{stat.value}</p>
+              <p className="text-xs text-slate-500 font-medium">{stat.label}</p>
+              <div className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full mt-1 ${stat.color}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${stat.dot}`} />
+                {stat.section}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Reports */}
