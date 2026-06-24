@@ -10,6 +10,35 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
 }
 
+// Map photo section tags to report section IDs
+const PHOTO_SECTION_MAP: Record<string, string[]> = {
+  jardinage: ['activities', 'mission'],
+  ateliers: ['activities'],
+  evenements: ['activities', 'members_volunteers'],
+  benevoles: ['members_volunteers'],
+  autre: [],
+}
+
+function SectionPhotos({ sectionId, report }: { sectionId: string; report: Report }) {
+  const photos = report.photos.filter(p => {
+    if (p.featured) return false
+    const mapped = PHOTO_SECTION_MAP[p.section] ?? []
+    return mapped.includes(sectionId)
+  })
+  if (photos.length === 0) return null
+  return (
+    <div className={`grid gap-2 mt-4 ${photos.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+      {photos.slice(0, 2).map(photo => (
+        <div key={photo.id} className="rounded-lg overflow-hidden bg-slate-100 aspect-video">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={photo.dataUrl} alt={photo.caption} className="w-full h-full object-cover" />
+          {photo.caption && <p className="text-xs text-center text-slate-400 p-1.5 italic">{photo.caption}</p>}
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function ReportPreview({ report }: { report: Report }) {
   const data = DEMO_ASSOCIATION
   const totalParticipants = data.events.reduce((s, e) => s + e.participants, 0)
@@ -57,6 +86,7 @@ function ReportPreview({ report }: { report: Report }) {
           <div className="space-y-3 text-slate-700 leading-relaxed">
             {section.content.split('\n').filter(Boolean).map((para, i) => <p key={i}>{para}</p>)}
           </div>
+          <SectionPhotos sectionId={section.id} report={report} />
         </div>
       ))}
       <div className="p-8 bg-slate-50 text-center border-t border-slate-100">
@@ -118,9 +148,9 @@ ${report.sections.map(s => `<h2>${s.title}</h2>${s.content.split('\n').filter(Bo
     <div className="space-y-6">
       <style>{`
         @media print {
-          body > * { display: none !important; }
-          #rapport-print { display: block !important; max-width: 100% !important; }
-          #rapport-print * { display: revert !important; }
+          body * { visibility: hidden; }
+          #rapport-print, #rapport-print * { visibility: visible; }
+          #rapport-print { position: fixed; top: 0; left: 0; width: 100%; max-width: 100%; margin: 0; padding: 0; }
         }
       `}</style>
 

@@ -100,7 +100,7 @@ export function getStepCompletion(report: Report): StepCompletion {
     data_review: true,
     interview: interviewAnswered >= 4,
     contributors: contributorsComplete >= 1,
-    photos: true,
+    photos: report.photos.length > 0,
     generation: report.sections.length > 0,
     editing: report.sections.length > 0,
     export: report.sections.length > 0,
