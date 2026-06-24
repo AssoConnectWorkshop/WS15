@@ -168,21 +168,6 @@ export default function RapportDashboardClient({ orgName, members, people, struc
         </div>
       </div>
 
-      {/* Value prop 3 pillars */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { icon: '⏱️', title: '30 minutes, pas plus', body: 'On a chronométré. Vraiment.' },
-          { icon: '🤖', title: "L'IA fait le boulot", body: 'Vous validez. Elle rédige. Pas l\'inverse.' },
-          { icon: '🏆', title: 'Rapport pro garanti', body: 'Vos membres vont être impressionnés.' },
-        ].map(p => (
-          <div key={p.title} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6 flex flex-col gap-2">
-            <span className="text-3xl">{p.icon}</span>
-            <p className="font-black text-slate-900 text-base leading-snug">{p.title}</p>
-            <p className="text-slate-400 text-sm">{p.body}</p>
-          </div>
-        ))}
-      </div>
-
       {/* Value prop + stats */}
       <div className="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-3xl p-6 space-y-5">
         <div>
