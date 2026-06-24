@@ -1,89 +1,107 @@
-import { getOrganization } from "@/lib/assoconnect";
+import {
+  getOrganization,
+  getStatsCrm,
+  getCollects,
+  getNonprofit,
+  getAccountingYears,
+} from "@/lib/assoconnect";
 
 export const dynamic = "force-dynamic";
 
-export default async function ApiTestPage() {
-  const results: { label: string; status: "ok" | "error" | "warn"; detail: string }[] = [];
+type TestResult = {
+  label: string;
+  status: "ok" | "error";
+  detail: string;
+  data?: unknown;
+};
 
-  // Check env vars
-  const hasToken = !!process.env.ASSOCONNECT_API_KEY;
-  const hasOrgUlid = !!process.env.ASSOCONNECT_ORGANIZATION_ULID;
-
-  results.push({
-    label: "ASSOCONNECT_API_KEY",
-    status: hasToken ? "ok" : "error",
-    detail: hasToken ? "présente" : "manquante",
-  });
-  results.push({
-    label: "ASSOCONNECT_ORGANIZATION_ULID",
-    status: hasOrgUlid ? "ok" : "error",
-    detail: hasOrgUlid
-      ? process.env.ASSOCONNECT_ORGANIZATION_ULID!
-      : "manquante",
-  });
-
-  // Test GET /organizations/{ulid}
-  let rawOrg: unknown = null;
+async function run(
+  label: string,
+  fn: () => Promise<unknown>
+): Promise<TestResult> {
   try {
-    rawOrg = await getOrganization();
-    results.push({
-      label: "GET /organizations/{ulid}",
-      status: "ok",
-      detail: "200 OK",
-    });
+    const data = await fn();
+    return { label, status: "ok", detail: "200 OK", data };
   } catch (e) {
-    results.push({
-      label: "GET /organizations/{ulid}",
+    return {
+      label,
       status: "error",
       detail: e instanceof Error ? e.message : String(e),
-    });
+    };
   }
+}
+
+export default async function ApiTestPage() {
+  const envResults: TestResult[] = [
+    {
+      label: "ASSOCONNECT_API_KEY",
+      status: process.env.ASSOCONNECT_API_KEY ? "ok" : "error",
+      detail: process.env.ASSOCONNECT_API_KEY ? "présente" : "manquante",
+    },
+    {
+      label: "ASSOCONNECT_ORGANIZATION_ULID",
+      status: process.env.ASSOCONNECT_ORGANIZATION_ULID ? "ok" : "error",
+      detail:
+        process.env.ASSOCONNECT_ORGANIZATION_ULID ??
+        "manquante",
+    },
+  ];
+
+  const apiResults = await Promise.all([
+    run("GET /organizations/{ulid}", getOrganization),
+    run("GET /organizations/{ulid}/stats_crm", getStatsCrm),
+    run("GET /organizations/{ulid}/collects", getCollects),
+    run("GET /organizations/{ulid}/nonprofit", async () => {
+      const nonprofit = await getNonprofit();
+      const nonprofitId = nonprofit["@id"].split("/").pop()!;
+      const years = await getAccountingYears(nonprofitId);
+      return { nonprofit, accountingYears: years["hydra:member"] };
+    }),
+  ]);
+
+  const allResults = [...envResults, ...apiResults];
 
   return (
-    <main className="mx-auto max-w-2xl p-8 font-mono text-sm">
-      <h1 className="mb-6 text-2xl font-bold">AssoConnect API — test de connexion</h1>
+    <main className="mx-auto max-w-3xl p-8 font-mono text-sm">
+      <h1 className="mb-2 text-2xl font-bold">AssoConnect API — test de connexion</h1>
+      <p className="mb-6 text-xs opacity-50">Base URL: https://app.assoconnect.com/api/v1</p>
 
       <table className="w-full border-collapse">
         <thead>
           <tr className="border-b text-left text-xs uppercase tracking-widest opacity-50">
-            <th className="pb-2 pr-4">Test</th>
-            <th className="pb-2 pr-4">Statut</th>
+            <th className="pb-2 pr-4 w-8">St.</th>
+            <th className="pb-2 pr-4">Endpoint</th>
             <th className="pb-2">Détail</th>
           </tr>
         </thead>
         <tbody>
-          {results.map((r) => (
+          {allResults.map((r) => (
             <tr key={r.label} className="border-b last:border-0">
-              <td className="py-2 pr-4 font-medium">{r.label}</td>
               <td className="py-2 pr-4">
-                <span
-                  className={
-                    r.status === "ok"
-                      ? "text-green-600"
-                      : r.status === "warn"
-                        ? "text-yellow-600"
-                        : "text-red-600"
-                  }
-                >
-                  {r.status === "ok" ? "✓" : r.status === "warn" ? "⚠" : "✗"}
+                <span className={r.status === "ok" ? "text-green-600" : "text-red-600"}>
+                  {r.status === "ok" ? "✓" : "✗"}
                 </span>
               </td>
+              <td className="py-2 pr-4 font-medium">{r.label}</td>
               <td className="py-2 opacity-70">{r.detail}</td>
             </tr>
           ))}
         </tbody>
       </table>
 
-      {rawOrg && (
-        <details className="mt-8">
-          <summary className="cursor-pointer font-semibold">
-            Réponse brute /organizations
-          </summary>
-          <pre className="mt-3 overflow-x-auto rounded-md bg-gray-100 p-4 text-xs">
-            {JSON.stringify(rawOrg, null, 2)}
-          </pre>
-        </details>
-      )}
+      <div className="mt-8 space-y-4">
+        {apiResults.map(
+          (r) =>
+            r.data && (
+              <details key={r.label}>
+                <summary className="cursor-pointer font-semibold">{r.label}</summary>
+                <pre className="mt-2 overflow-x-auto rounded-md bg-gray-100 p-4 text-xs">
+                  {JSON.stringify(r.data, null, 2)}
+                </pre>
+              </details>
+            )
+        )}
+      </div>
     </main>
   );
 }
