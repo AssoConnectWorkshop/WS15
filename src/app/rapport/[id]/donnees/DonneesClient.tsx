@@ -405,7 +405,15 @@ export default function DonneesClient({
                     return (
                       <>
                         <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mt-3 mb-3">{label}</p>
-                        <PieChart slices={slices} />
+                        {slices.length >= 2
+                          ? <PieChart slices={slices} />
+                          : <div className="space-y-1.5">{slices.map(s => (
+                              <div key={s.label} className="flex items-center justify-between text-sm py-1.5 px-3 bg-slate-50 rounded-lg">
+                                <span className="text-slate-600 truncate flex-1">{s.label}</span>
+                                <span className="font-bold text-slate-800 ml-3 shrink-0">{s.value.toLocaleString('fr-FR')} €</span>
+                              </div>
+                            ))}</div>
+                        }
                       </>
                     )
                   })()}
