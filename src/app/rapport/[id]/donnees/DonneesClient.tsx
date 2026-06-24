@@ -389,7 +389,27 @@ export default function DonneesClient({
                       <p className="text-xs text-slate-500">Résultat</p>
                     </div>
                   </div>
-                  <p className="text-xs text-slate-300">{entries.length} écritures comptables</p>
+                  {(() => {
+                    const COLORS = ['#6366f1', '#8b5cf6', '#fbbf24', '#34d399', '#f87171', '#60a5fa']
+                    const sourceEntries = totalRevenue > 0
+                      ? entries.filter(e => e.type === 'CREDIT' && e.account.type === 'INCOME')
+                      : entries.filter(e => e.type === 'DEBIT' && e.account.type === 'EXPENSE')
+                    const label = totalRevenue > 0 ? 'Répartition des recettes' : 'Répartition des dépenses'
+                    const slices = sourceEntries.reduce<{ label: string; value: number; color: string }[]>((acc, e) => {
+                      const name = e.account.displayName.replace(/^\d+ - /, '')
+                      const existing = acc.find(s => s.label === name)
+                      if (existing) { existing.value += Number(e.amount); return acc }
+                      return [...acc, { label: name, value: Number(e.amount), color: COLORS[acc.length % COLORS.length] }]
+                    }, [])
+                    if (slices.length === 0) return null
+                    return (
+                      <>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mt-3 mb-3">{label}</p>
+                        <PieChart slices={slices} />
+                      </>
+                    )
+                  })()}
+                  <p className="text-xs text-slate-300 mt-3">{entries.length} écritures comptables</p>
                 </>
               )}
             </Card>
