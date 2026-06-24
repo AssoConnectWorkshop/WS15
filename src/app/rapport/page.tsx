@@ -12,8 +12,12 @@ export default async function RapportPage() {
   ])
 
   const entries = accountingEntries['hydra:member']
-  const totalRevenue = entries.filter(e => e.amount > 0).reduce((s, e) => s + e.amount, 0)
-  const totalExpenses = entries.filter(e => e.amount < 0).reduce((s, e) => s + Math.abs(e.amount), 0)
+  const totalRevenue = entries
+    .filter(e => e.type === 'CREDIT' && e.account.type === 'INCOME')
+    .reduce((s, e) => s + Number(e.amount), 0)
+  const totalExpenses = entries
+    .filter(e => e.type === 'DEBIT' && e.account.type === 'EXPENSE')
+    .reduce((s, e) => s + Number(e.amount), 0)
 
   return (
     <RapportDashboardClient

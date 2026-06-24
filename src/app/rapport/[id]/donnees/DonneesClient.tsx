@@ -206,12 +206,13 @@ export default function DonneesClient({
   const entries = accountingEntries['hydra:member']
 
   const totalRevenue = entries
-    .filter(e => e.amount > 0)
-    .reduce((s, e) => s + e.amount, 0)
+    .filter(e => e.type === 'CREDIT' && e.account.type === 'INCOME')
+    .reduce((s, e) => s + Number(e.amount), 0)
   const totalExpenses = entries
-    .filter(e => e.amount < 0)
-    .reduce((s, e) => s + Math.abs(e.amount), 0)
+    .filter(e => e.type === 'DEBIT' && e.account.type === 'EXPENSE')
+    .reduce((s, e) => s + Number(e.amount), 0)
   const surplus = totalRevenue - totalExpenses
+  const totalVolume = totalRevenue + totalExpenses
 
   return (
     <div className="space-y-6">
@@ -279,7 +280,7 @@ export default function DonneesClient({
               { label: 'Événements', value: events.length, sub: events.length === 0 ? 'Aucun enregistré' : `${events.filter(e => e.status === 'PUBLISHED').length} publiés`, icon: '📅', color: 'text-amber-600' },
               {
                 label: surplus >= 0 ? 'Excédent' : 'Déficit',
-                value: `${surplus >= 0 ? '+' : ''}${surplus.toLocaleString('fr-FR')} €`,
+                value: entries.length === 0 ? '—' : `${surplus >= 0 ? '+' : ''}${surplus.toLocaleString('fr-FR')} €`,
                 sub: entries.length === 0 ? 'Aucune écriture' : `sur ${totalRevenue.toLocaleString('fr-FR')} € de recettes`,
                 icon: '💰',
                 color: surplus >= 0 ? 'text-emerald-600' : 'text-red-500',
@@ -388,13 +389,7 @@ export default function DonneesClient({
                       <p className="text-xs text-slate-500">Résultat</p>
                     </div>
                   </div>
-                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wide mt-1 mb-3">Répartition des recettes</p>
-                  <PieChart slices={[
-                    { label: 'Dons & cotisations', value: entries.filter(e => e.amount > 0 && e.label?.toLowerCase().includes('don')).reduce((s, e) => s + e.amount, 0) || Math.round(totalRevenue * 0.35), color: '#6366f1' },
-                    { label: 'Subventions', value: entries.filter(e => e.amount > 0 && e.label?.toLowerCase().includes('subv')).reduce((s, e) => s + e.amount, 0) || Math.round(totalRevenue * 0.45), color: '#8b5cf6' },
-                    { label: 'Autres recettes', value: Math.round(totalRevenue * 0.2), color: '#fbbf24' },
-                  ]} />
-                  <p className="text-xs text-slate-300 mt-2">{entries.length} écritures comptables</p>
+                  <p className="text-xs text-slate-300">{entries.length} écritures comptables</p>
                 </>
               )}
             </Card>

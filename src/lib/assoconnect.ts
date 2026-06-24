@@ -133,11 +133,19 @@ export type AccountingEntry = {
   "@id": string;
   "@type": string;
   id: string;
-  label: string;
+  name: string;
+  type: "DEBIT" | "CREDIT";
+  amount: string;
   date: string;
-  amount: number;
-  debit: number;
-  credit: number;
+  currency: string;
+  account: {
+    "@id": string;
+    "@type": string;
+    accountNumber: number;
+    officialName: string;
+    displayName: string;
+    type: "INCOME" | "EXPENSE" | "TREASURY" | "OTHER";
+  };
 };
 
 export function getEventCollects(ulid = orgUlid()) {
