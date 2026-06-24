@@ -156,6 +156,6 @@ export function getEventCollects(ulid = orgUlid()) {
 
 export function getAccountingEntries(ulid = orgUlid()) {
   return request<CollectionResponse<AccountingEntry>>(
-    `/organizations/${ulid}/accounting_entries?itemsPerPage=50`
+    `/organizations/${ulid}/accounting_entries?itemsPerPage=200`
   );
 }

@@ -206,10 +206,10 @@ export default function DonneesClient({
   const entries = accountingEntries['hydra:member']
 
   const totalRevenue = entries
-    .filter(e => e.type === 'CREDIT' && e.account.type === 'INCOME')
+    .filter(e => e.type === 'CREDIT' && e.account.accountNumber >= 700000 && e.account.accountNumber < 800000)
     .reduce((s, e) => s + Number(e.amount), 0)
   const totalExpenses = entries
-    .filter(e => e.type === 'DEBIT' && e.account.type === 'EXPENSE')
+    .filter(e => e.type === 'DEBIT' && e.account.accountNumber >= 600000 && e.account.accountNumber < 700000)
     .reduce((s, e) => s + Number(e.amount), 0)
   const surplus = totalRevenue - totalExpenses
   const totalVolume = totalRevenue + totalExpenses
@@ -392,8 +392,8 @@ export default function DonneesClient({
                   {(() => {
                     const COLORS = ['#6366f1', '#8b5cf6', '#fbbf24', '#34d399', '#f87171', '#60a5fa']
                     const sourceEntries = totalRevenue > 0
-                      ? entries.filter(e => e.type === 'CREDIT' && e.account.type === 'INCOME')
-                      : entries.filter(e => e.type === 'DEBIT' && e.account.type === 'EXPENSE')
+                      ? entries.filter(e => e.type === 'CREDIT' && e.account.accountNumber >= 700000 && e.account.accountNumber < 800000)
+                      : entries.filter(e => e.type === 'DEBIT' && e.account.accountNumber >= 600000 && e.account.accountNumber < 700000)
                     const label = totalRevenue > 0 ? 'Répartition des recettes' : 'Répartition des dépenses'
                     const slices = sourceEntries.reduce<{ label: string; value: number; color: string }[]>((acc, e) => {
                       const name = e.account.displayName.replace(/^\d+ - /, '')
