@@ -9,12 +9,22 @@ export type Article = {
   duration: string;
 };
 
+export type QuizQuestion = {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+};
+
 export type Mission = {
   id: string;
   title: string;
   description: string;
   xp: number;
+  quizXp: number;
   articles: Article[];
+  quiz: QuizQuestion[];
 };
 
 export type Badge = {
@@ -71,6 +81,7 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
             title: "Créer et structurer son association",
             description: "Les étapes clés pour bien démarrer",
             xp: 150,
+            quizXp: 75,
             articles: [
               {
                 id: "art-statuts",
@@ -89,12 +100,35 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 duration: "6 min",
               },
               {
-                id: "art-ca",
-                title: "Conseil d'administration : rôles et fonctionnement",
-                url: "https://www.assoconnect.com/blog/conseil-administration-association/",
-                description: "Composition, attributions et bonnes pratiques du CA.",
-                type: "article",
-                duration: "7 min",
+                id: "vid-creer-asso",
+                title: "Créer son association de A à Z",
+                url: "https://www.youtube.com/watch?v=dSxMbdAcWR8",
+                description: "Tutoriel vidéo complet sur les démarches de création d'une association loi 1901.",
+                type: "video",
+                duration: "12 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-statuts-1",
+                question: "Combien de personnes minimum sont nécessaires pour créer une association loi 1901 ?",
+                options: ["1 personne", "2 personnes", "3 personnes", "5 personnes"],
+                correctIndex: 1,
+                explanation: "La loi 1901 exige au minimum 2 personnes pour créer une association.",
+              },
+              {
+                id: "q-statuts-2",
+                question: "Quel document définit le fonctionnement interne détaillé d'une association (réunions, votes, sanctions...) ?",
+                options: ["Les statuts", "Le règlement intérieur", "Le procès-verbal", "La déclaration en préfecture"],
+                correctIndex: 1,
+                explanation: "Le règlement intérieur précise les modalités de fonctionnement que les statuts n'abordent pas en détail.",
+              },
+              {
+                id: "q-statuts-3",
+                question: "Où doit-on déposer la déclaration de création d'une association ?",
+                options: ["À la mairie", "Au tribunal", "En préfecture ou sous-préfecture", "À la chambre de commerce"],
+                correctIndex: 2,
+                explanation: "La déclaration se fait en préfecture ou sous-préfecture du siège social de l'association.",
               },
             ],
           },
@@ -103,6 +137,7 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
             title: "Organiser une assemblée générale",
             description: "AG ordinaire ou extraordinaire : tout ce qu'il faut savoir",
             xp: 200,
+            quizXp: 100,
             articles: [
               {
                 id: "art-ag-ord",
@@ -113,20 +148,48 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 duration: "10 min",
               },
               {
-                id: "art-ag-ext",
-                title: "Assemblée générale extraordinaire : quand et comment ?",
-                url: "https://www.assoconnect.com/blog/assemblee-generale-extraordinaire/",
-                description: "Cas d'usage et procédure de l'AGE.",
-                type: "article",
-                duration: "6 min",
-              },
-              {
                 id: "art-pv-ag",
                 title: "Rédiger le procès-verbal d'une assemblée générale",
                 url: "https://www.assoconnect.com/blog/proces-verbal-assemblee-generale/",
                 description: "Modèle et conseils pour un PV valide.",
                 type: "article",
                 duration: "5 min",
+              },
+              {
+                id: "vid-ag",
+                title: "Comment organiser une assemblée générale ?",
+                url: "https://www.youtube.com/watch?v=7Km2q0ZiAMw",
+                description: "Les étapes clés pour préparer et animer une AG réussie, expliquées en vidéo.",
+                type: "video",
+                duration: "8 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-ag-1",
+                question: "Quel est le délai de convocation minimum recommandé avant une assemblée générale ?",
+                options: ["3 jours", "8 jours", "15 jours", "1 mois"],
+                correctIndex: 2,
+                explanation: "Il est recommandé de convoquer les membres au moins 15 jours avant l'AG (sauf disposition contraire des statuts).",
+              },
+              {
+                id: "q-ag-2",
+                question: "Qui rédige le procès-verbal de l'assemblée générale ?",
+                options: ["Le président", "Le trésorier", "Le secrétaire", "Un huissier"],
+                correctIndex: 2,
+                explanation: "C'est généralement le secrétaire qui rédige et signe le procès-verbal de l'AG.",
+              },
+              {
+                id: "q-ag-3",
+                question: "Pour quelle raison principale convoque-t-on une assemblée générale extraordinaire ?",
+                options: [
+                  "Pour approuver les comptes annuels",
+                  "Pour modifier les statuts ou dissoudre l'association",
+                  "Pour élire le bureau",
+                  "Pour voter le budget prévisionnel",
+                ],
+                correctIndex: 1,
+                explanation: "L'AGE est convoquée pour des décisions exceptionnelles : modification des statuts, dissolution, fusion.",
               },
             ],
           },
@@ -150,6 +213,7 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
             title: "Recruter de nouveaux adhérents",
             description: "Stratégies et outils pour développer votre base",
             xp: 150,
+            quizXp: 75,
             articles: [
               {
                 id: "art-recruter",
@@ -167,6 +231,40 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 type: "article",
                 duration: "5 min",
               },
+              {
+                id: "vid-adherents",
+                title: "Gérer ses adhérents avec AssoConnect",
+                url: "https://www.youtube.com/watch?v=fBQ9e7ZNFRU",
+                description: "Découvrez comment centraliser et gérer votre base d'adhérents dans AssoConnect.",
+                type: "video",
+                duration: "6 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-recruit-1",
+                question: "Quelle mention est obligatoire sur un bulletin d'adhésion ?",
+                options: [
+                  "La photo du membre",
+                  "La mention RGPD sur l'utilisation des données",
+                  "Le numéro de sécurité sociale",
+                  "Le QI du membre",
+                ],
+                correctIndex: 1,
+                explanation: "Depuis le RGPD, le bulletin doit informer les membres sur l'utilisation de leurs données personnelles.",
+              },
+              {
+                id: "q-recruit-2",
+                question: "Quel canal est généralement le plus efficace pour recruter de nouveaux adhérents ?",
+                options: [
+                  "La publicité payante en ligne",
+                  "Le bouche-à-oreille et la recommandation",
+                  "Les flyers dans les boîtes aux lettres",
+                  "La télévision locale",
+                ],
+                correctIndex: 1,
+                explanation: "Le bouche-à-oreille reste le canal de recrutement le plus efficace pour les associations.",
+              },
             ],
           },
           {
@@ -174,6 +272,7 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
             title: "Fidéliser ses membres",
             description: "Créer un sentiment d'appartenance fort",
             xp: 175,
+            quizXp: 88,
             articles: [
               {
                 id: "art-fideliser",
@@ -190,6 +289,40 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 description: "Management associatif et valorisation du bénévolat.",
                 type: "article",
                 duration: "9 min",
+              },
+              {
+                id: "vid-benevoles",
+                title: "Motiver et fidéliser ses bénévoles",
+                url: "https://www.youtube.com/watch?v=tMzMFnbXH0I",
+                description: "Conseils pratiques pour engager durablement vos bénévoles.",
+                type: "video",
+                duration: "9 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-fidel-1",
+                question: "Quel est le principal facteur de départ d'un bénévole selon les études ?",
+                options: [
+                  "Le manque de reconnaissance",
+                  "Les horaires trop chargés",
+                  "Les conflits avec les adhérents",
+                  "Le manque de matériel",
+                ],
+                correctIndex: 0,
+                explanation: "Le manque de reconnaissance est la première cause de départ des bénévoles. Valoriser leur engagement est essentiel.",
+              },
+              {
+                id: "q-fidel-2",
+                question: "Quelle pratique favorise le plus la fidélisation des adhérents ?",
+                options: [
+                  "Baisser le prix de la cotisation chaque année",
+                  "Créer des événements exclusifs pour les membres anciens",
+                  "Impliquer les membres dans la vie et les décisions de l'association",
+                  "Envoyer des newsletters très fréquentes",
+                ],
+                correctIndex: 2,
+                explanation: "L'implication des membres dans les décisions crée un fort sentiment d'appartenance et réduit le taux de départ.",
               },
             ],
           },
@@ -224,6 +357,7 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
             title: "Les bases de la comptabilité",
             description: "Comprendre les principes fondamentaux",
             xp: 200,
+            quizXp: 100,
             articles: [
               {
                 id: "art-compta-asso",
@@ -242,12 +376,45 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 duration: "8 min",
               },
               {
-                id: "art-bilan",
-                title: "Lire et interpréter un bilan associatif",
-                url: "https://www.assoconnect.com/blog/bilan-association/",
-                description: "Actif, passif, résultat : décryptage complet.",
-                type: "article",
-                duration: "10 min",
+                id: "vid-compta-bases",
+                title: "La comptabilité associative expliquée simplement",
+                url: "https://www.youtube.com/watch?v=YvnFXkv0d9A",
+                description: "Introduction aux grands principes de la comptabilité pour les associations.",
+                type: "video",
+                duration: "11 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-compta-1",
+                question: "À partir de quel seuil de ressources une association est-elle obligée de nommer un commissaire aux comptes ?",
+                options: ["153 000 €", "1 530 000 €", "3 100 000 €", "Toutes les associations"],
+                correctIndex: 1,
+                explanation: "Une association qui reçoit plus de 153 000 € de subventions publiques ou dépasse 1 530 000 € de ressources doit nommer un CAC.",
+              },
+              {
+                id: "q-compta-2",
+                question: "Que représente l'actif dans le bilan d'une association ?",
+                options: [
+                  "Les dettes de l'association",
+                  "Les ressources financières disponibles",
+                  "Ce que l'association possède (biens, créances, trésorerie)",
+                  "Le résultat de l'exercice",
+                ],
+                correctIndex: 2,
+                explanation: "L'actif représente tout ce que l'association possède : immobilisations, stocks, créances et trésorerie.",
+              },
+              {
+                id: "q-compta-3",
+                question: "Qu'est-ce que le principe de prudence en comptabilité ?",
+                options: [
+                  "Ne pas dépenser plus que le budget prévu",
+                  "Comptabiliser les pertes probables mais pas les gains incertains",
+                  "Conserver tous les justificatifs pendant 10 ans",
+                  "Ne pas contracter de dettes",
+                ],
+                correctIndex: 1,
+                explanation: "Le principe de prudence impose de comptabiliser les risques et pertes probables, mais pas les profits hypothétiques.",
               },
             ],
           },
@@ -256,6 +423,7 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
             title: "Construire et suivre son budget",
             description: "Prévisionnels, suivi et clôture de l'exercice",
             xp: 250,
+            quizXp: 125,
             articles: [
               {
                 id: "art-budget-prev",
@@ -272,6 +440,40 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 description: "Structure et présentation en assemblée générale.",
                 type: "article",
                 duration: "7 min",
+              },
+              {
+                id: "vid-budget",
+                title: "Créer un budget prévisionnel avec AssoConnect",
+                url: "https://www.youtube.com/watch?v=gH3tPqLOJE8",
+                description: "Tutoriel pour construire et suivre votre budget dans AssoConnect.",
+                type: "video",
+                duration: "10 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-budget-1",
+                question: "Quand le budget prévisionnel est-il généralement soumis au vote ?",
+                options: [
+                  "À l'assemblée générale ordinaire",
+                  "À l'assemblée générale extraordinaire",
+                  "Lors d'une réunion de bureau",
+                  "Il n'est pas obligatoire de le voter",
+                ],
+                correctIndex: 0,
+                explanation: "Le budget prévisionnel est classiquement présenté et voté lors de l'AGO, en même temps que les comptes de l'exercice précédent.",
+              },
+              {
+                id: "q-budget-2",
+                question: "Qu'est-ce qu'un résultat déficitaire pour une association ?",
+                options: [
+                  "Les dépenses sont supérieures aux recettes",
+                  "L'association n'a pas de trésorerie",
+                  "Les recettes sont supérieures aux dépenses",
+                  "L'association a des dettes",
+                ],
+                correctIndex: 0,
+                explanation: "Un résultat déficitaire signifie que les charges de l'exercice dépassent les produits. À ne pas confondre avec une absence de trésorerie.",
               },
             ],
           },
@@ -295,6 +497,7 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
             title: "Fixer et gérer les cotisations",
             description: "Montants, modes de paiement, relances",
             xp: 175,
+            quizXp: 88,
             articles: [
               {
                 id: "art-fixer-cotis",
@@ -313,12 +516,38 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 duration: "7 min",
               },
               {
-                id: "art-relances",
-                title: "Gérer les impayés et relancer ses adhérents",
-                url: "https://www.assoconnect.com/blog/relance-cotisation-association/",
-                description: "Processus de relance efficace sans froisser les membres.",
-                type: "article",
-                duration: "5 min",
+                id: "vid-paiement",
+                title: "Collecter les cotisations en ligne avec AssoConnect",
+                url: "https://www.youtube.com/watch?v=LjP3qXMFnEk",
+                description: "Comment activer et utiliser le paiement en ligne pour vos adhésions.",
+                type: "video",
+                duration: "7 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-cotis-1",
+                question: "La cotisation d'une association est-elle obligatoirement la même pour tous les membres ?",
+                options: [
+                  "Oui, elle doit être identique pour tous",
+                  "Non, les statuts peuvent prévoir des tarifs différenciés",
+                  "Non, mais seulement pour les moins de 18 ans",
+                  "Oui, sinon c'est discriminatoire",
+                ],
+                correctIndex: 1,
+                explanation: "Les statuts peuvent prévoir des tarifs différenciés (tarif réduit, famille, bienfaiteur...) tant que les critères sont objectifs.",
+              },
+              {
+                id: "q-cotis-2",
+                question: "Quel avantage principal offre le paiement en ligne pour une association ?",
+                options: [
+                  "Il évite de payer des frais bancaires",
+                  "Il automatise les relances et la comptabilité",
+                  "Il est obligatoire pour les associations de plus de 50 membres",
+                  "Il supprime le besoin d'un bulletin d'adhésion",
+                ],
+                correctIndex: 1,
+                explanation: "Le paiement en ligne automatise la collecte, les relances et la réconciliation comptable, réduisant fortement la charge administrative.",
               },
             ],
           },
@@ -327,6 +556,7 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
             title: "Subventions et financements",
             description: "Identifier et obtenir des financements publics",
             xp: 225,
+            quizXp: 113,
             articles: [
               {
                 id: "art-subventions",
@@ -344,6 +574,40 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 type: "article",
                 duration: "9 min",
               },
+              {
+                id: "vid-subventions",
+                title: "Obtenir des subventions pour son association",
+                url: "https://www.youtube.com/watch?v=KQxAZ8Rn0bM",
+                description: "Les clés pour identifier les financements disponibles et monter un dossier solide.",
+                type: "video",
+                duration: "14 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-subv-1",
+                question: "Quelle est la différence entre une subvention et un don ?",
+                options: [
+                  "Il n'y a aucune différence",
+                  "La subvention vient d'un organisme public, le don d'un particulier ou entreprise",
+                  "La subvention est remboursable, le don ne l'est pas",
+                  "Le don est fiscalement déductible, la subvention non",
+                ],
+                correctIndex: 1,
+                explanation: "Une subvention est attribuée par une collectivité ou l'État. Un don provient d'un particulier ou d'une entreprise (mécénat).",
+              },
+              {
+                id: "q-subv-2",
+                question: "Quel document est généralement exigé pour justifier l'utilisation d'une subvention ?",
+                options: [
+                  "Un simple email de remerciement",
+                  "Un compte rendu financier d'utilisation de la subvention",
+                  "Les statuts de l'association",
+                  "Le procès-verbal de la dernière AG",
+                ],
+                correctIndex: 1,
+                explanation: "Le compte rendu financier est obligatoire pour les subventions dépassant 23 000 €. Il détaille comment les fonds ont été utilisés.",
+              },
             ],
           },
         ],
@@ -353,13 +617,11 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
 };
 
 export function getTotalXP(role: RoleConfig): number {
-  return role.parcours
-    .flatMap((p) => p.missions)
-    .reduce((sum, m) => sum + m.xp, 0);
+  return role.parcours.flatMap((p) => p.missions).reduce((sum, m) => sum + m.xp + m.quizXp, 0);
 }
 
 export function getParcoursXP(parcours: Parcours): number {
-  return parcours.missions.reduce((sum, m) => sum + m.xp, 0);
+  return parcours.missions.reduce((sum, m) => sum + m.xp + m.quizXp, 0);
 }
 
 export function getAllArticleIds(role: RoleConfig): string[] {
