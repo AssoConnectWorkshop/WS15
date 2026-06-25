@@ -47,8 +47,8 @@ export type RoleConfig = {
 export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
   president: {
     id: "president",
-    title: "Président·e",
-    subtitle: "Pilotez votre association avec confiance",
+    title: "Présidente ou président",
+    subtitle: "Vous changez la donne, AssoConnect s'occupe du reste.",
     emoji: "🏛️",
     color: "violet",
     gradient: "from-violet-600 to-purple-700",
@@ -200,8 +200,8 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
 
   tresorier: {
     id: "tresorier",
-    title: "Trésorier·e",
-    subtitle: "Maîtrisez les finances de votre association",
+    title: "Trésorière ou trésorier",
+    subtitle: "La comptabilité n'aura plus de secret pour vous.",
     emoji: "💰",
     color: "emerald",
     gradient: "from-emerald-600 to-teal-700",

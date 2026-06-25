@@ -369,7 +369,7 @@ export default function AcademieRoleClient({ roleId }: { roleId: string }) {
 
   const levelThresholds = [0, 200, 500, 900, totalXP];
   const currentLevel = levelThresholds.findLastIndex((t) => earnedXP >= t) + 1;
-  const levelNames = ["Débutant", "Initié", "Praticien", "Expert", "Maître"];
+  const levelNames = ["Débutante ou débutant", "Initié", "Praticien", "Expert", "Maître"];
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -465,8 +465,8 @@ export default function AcademieRoleClient({ roleId }: { roleId: string }) {
               Parcours complété !
             </h3>
             <p className="text-amber-800">
-              Félicitations ! Vous avez terminé tous les parcours {role.title.toLowerCase()} et
-              gagné {totalXP} XP. Vous êtes maintenant un·e expert·e AssoConnect !
+              Félicitations ! Vous avez terminé tous les parcours et gagné {totalXP} XP.
+              Vous méritez un outil à la hauteur de votre impact.
             </p>
           </div>
         )}

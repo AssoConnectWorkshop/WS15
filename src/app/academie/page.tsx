@@ -63,7 +63,7 @@ function RoleCard({ role }: { role: RoleConfig }) {
       <div
         className={`mt-auto flex items-center justify-center gap-2 rounded-xl px-6 py-3 font-semibold transition-all ${colors.cta}`}
       >
-        Commencer mon parcours
+        Démarrer mon parcours
         <span className="transition-transform group-hover:translate-x-1">→</span>
       </div>
     </Link>
@@ -87,14 +87,14 @@ export default function AcademiePage() {
             <span>AssoConnect Académie</span>
           </div>
           <h1 className="mb-6 text-5xl font-extrabold tracking-tight text-white">
-            Devenez expert de{" "}
+            Gérer une asso est un noble casse-tête.{" "}
             <span className="bg-gradient-to-r from-violet-400 to-emerald-400 bg-clip-text text-transparent">
-              votre association
+              On vous aide.
             </span>
           </h1>
           <p className="text-xl text-slate-300">
             Des parcours de formation gamifiés, adaptés à votre rôle. Apprenez à votre rythme,
-            débloquez des badges et montez en compétence.
+            débloquez des badges et montez en compétences — gratuitement.
           </p>
         </div>
       </div>
@@ -108,7 +108,7 @@ export default function AcademiePage() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xl">🏅</span>
-            <span><strong className="text-slate-900">8 badges</strong> à débloquer</span>
+            <span><strong className="text-slate-900">4 badges</strong> à débloquer</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xl">⚡</span>
