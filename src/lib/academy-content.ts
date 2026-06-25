@@ -7,6 +7,7 @@ export type Article = {
   description: string;
   type: "article" | "video" | "webinar";
   duration: string;
+  youtubeId?: string; // YouTube video ID for embedded player
 };
 
 export type QuizQuestion = {
@@ -102,10 +103,11 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
               {
                 id: "vid-creer-asso",
                 title: "Créer son association de A à Z",
-                url: "https://www.youtube.com/watch?v=dSxMbdAcWR8",
+                url: "https://www.youtube.com/@assoconnect",
                 description: "Tutoriel vidéo complet sur les démarches de création d'une association loi 1901.",
                 type: "video",
                 duration: "12 min",
+                youtubeId: "TODO_REPLACE", // Remplacer par l'ID de la vidéo youtube.com/@assoconnect
               },
             ],
             quiz: [
@@ -158,10 +160,11 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
               {
                 id: "vid-ag",
                 title: "Comment organiser une assemblée générale ?",
-                url: "https://www.youtube.com/watch?v=7Km2q0ZiAMw",
+                url: "https://www.youtube.com/@assoconnect",
                 description: "Les étapes clés pour préparer et animer une AG réussie, expliquées en vidéo.",
                 type: "video",
                 duration: "8 min",
+                youtubeId: "TODO_ag", // ← Remplacer par l\'ID vidéo depuis youtube.com/@assoconnect
               },
             ],
             quiz: [
@@ -234,10 +237,11 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
               {
                 id: "vid-adherents",
                 title: "Gérer ses adhérents avec AssoConnect",
-                url: "https://www.youtube.com/watch?v=fBQ9e7ZNFRU",
+                url: "https://www.youtube.com/@assoconnect",
                 description: "Découvrez comment centraliser et gérer votre base d'adhérents dans AssoConnect.",
                 type: "video",
                 duration: "6 min",
+                youtubeId: "TODO_adherents", // ← Remplacer par l\'ID vidéo depuis youtube.com/@assoconnect
               },
             ],
             quiz: [
@@ -293,10 +297,11 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
               {
                 id: "vid-benevoles",
                 title: "Motiver et fidéliser ses bénévoles",
-                url: "https://www.youtube.com/watch?v=tMzMFnbXH0I",
+                url: "https://www.youtube.com/@assoconnect",
                 description: "Conseils pratiques pour engager durablement vos bénévoles.",
                 type: "video",
                 duration: "9 min",
+                youtubeId: "TODO_benevoles", // ← Remplacer par l\'ID vidéo depuis youtube.com/@assoconnect
               },
             ],
             quiz: [
@@ -378,10 +383,11 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
               {
                 id: "vid-compta-bases",
                 title: "La comptabilité associative expliquée simplement",
-                url: "https://www.youtube.com/watch?v=YvnFXkv0d9A",
+                url: "https://www.youtube.com/@assoconnect",
                 description: "Introduction aux grands principes de la comptabilité pour les associations.",
                 type: "video",
                 duration: "11 min",
+                youtubeId: "TODO_compta_bases", // ← Remplacer par l\'ID vidéo depuis youtube.com/@assoconnect
               },
             ],
             quiz: [
@@ -444,10 +450,11 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
               {
                 id: "vid-budget",
                 title: "Créer un budget prévisionnel avec AssoConnect",
-                url: "https://www.youtube.com/watch?v=gH3tPqLOJE8",
+                url: "https://www.youtube.com/@assoconnect",
                 description: "Tutoriel pour construire et suivre votre budget dans AssoConnect.",
                 type: "video",
                 duration: "10 min",
+                youtubeId: "TODO_budget", // ← Remplacer par l\'ID vidéo depuis youtube.com/@assoconnect
               },
             ],
             quiz: [
@@ -518,10 +525,11 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
               {
                 id: "vid-paiement",
                 title: "Collecter les cotisations en ligne avec AssoConnect",
-                url: "https://www.youtube.com/watch?v=LjP3qXMFnEk",
+                url: "https://www.youtube.com/@assoconnect",
                 description: "Comment activer et utiliser le paiement en ligne pour vos adhésions.",
                 type: "video",
                 duration: "7 min",
+                youtubeId: "TODO_paiement", // ← Remplacer par l\'ID vidéo depuis youtube.com/@assoconnect
               },
             ],
             quiz: [
@@ -577,10 +585,11 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
               {
                 id: "vid-subventions",
                 title: "Obtenir des subventions pour son association",
-                url: "https://www.youtube.com/watch?v=KQxAZ8Rn0bM",
+                url: "https://www.youtube.com/@assoconnect",
                 description: "Les clés pour identifier les financements disponibles et monter un dossier solide.",
                 type: "video",
                 duration: "14 min",
+                youtubeId: "TODO_subventions", // ← Remplacer par l\'ID vidéo depuis youtube.com/@assoconnect
               },
             ],
             quiz: [
