@@ -1,5 +1,4 @@
 import Image from "next/image";
-import Link from "next/link";
 import { getOrganization } from "@/lib/assoconnect";
 import { createClient } from "@/lib/supabase/server";
 
@@ -78,15 +77,6 @@ export default async function Home() {
           )}
         </div>
       </div>
-
-      <Link
-        href="/academie"
-        className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-700 px-8 py-4 font-semibold text-white shadow-lg shadow-violet-200 transition-all hover:scale-105 hover:shadow-violet-300"
-      >
-        <span className="text-2xl">🎓</span>
-        <span>Accéder à l&apos;Académie AssoConnect</span>
-        <span>→</span>
-      </Link>
     </main>
   );
 }
