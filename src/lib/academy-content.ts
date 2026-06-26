@@ -38,9 +38,8 @@ export type RoleConfig = {
   id: Role;
   title: string;
   subtitle: string;
-  emoji: string;
-  color: string;
-  gradient: string;
+  icon: "president" | "tresorier";
+  color: "blue" | "green";
   parcours: Parcours[];
 };
 
@@ -49,9 +48,8 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
     id: "president",
     title: "Présidente ou président",
     subtitle: "Vous changez la donne, AssoConnect s'occupe du reste.",
-    emoji: "🏛️",
-    color: "violet",
-    gradient: "from-violet-600 to-purple-700",
+    icon: "president",
+    color: "blue",
     parcours: [
       {
         id: "gouvernance",
@@ -202,9 +200,8 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
     id: "tresorier",
     title: "Trésorière ou trésorier",
     subtitle: "La comptabilité n'aura plus de secret pour vous.",
-    emoji: "💰",
-    color: "emerald",
-    gradient: "from-emerald-600 to-teal-700",
+    icon: "tresorier",
+    color: "green",
     parcours: [
       {
         id: "comptabilite",

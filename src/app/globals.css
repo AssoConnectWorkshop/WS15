@@ -3,6 +3,15 @@
 @theme {
   --color-background: #ffffff;
   --color-foreground: #0a0a0a;
+
+  --color-asso-blue: #3D5AF1;
+  --color-asso-blue-dark: #2d46d6;
+  --color-asso-blue-light: #eef1fe;
+  --color-asso-green: #00C49A;
+  --color-asso-green-dark: #00a882;
+  --color-asso-green-light: #e6faf6;
+  --color-asso-navy: #1a2456;
+  --color-asso-gray: #6b7280;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -16,3 +25,16 @@ body {
   background: var(--color-background);
   color: var(--color-foreground);
 }
+
+@keyframes slide-in-right {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+.animate-slide-in-right { animation: slide-in-right 0.3s ease-out; }
+
+@keyframes pop-in {
+  0%   { transform: scale(0.8); opacity: 0; }
+  70%  { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop-in { animation: pop-in 0.4s ease-out; }
