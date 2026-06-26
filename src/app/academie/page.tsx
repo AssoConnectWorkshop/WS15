@@ -125,7 +125,7 @@ export default function AcademiePage() {
       </nav>
 
       {/* Hero */}
-      <div className="px-6 py-16 text-center" style={{ background: "linear-gradient(135deg, #3D5AF1 0%, #2d46d6 50%, #1a2456 100%)" }}>
+      <div className="px-6 py-16 text-center" style={{ background: "linear-gradient(160deg, #3D5AF1 0%, #1a2456 100%)" }}>
         <div className="mx-auto max-w-3xl">
           <div
             className="mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-white/80"
@@ -175,7 +175,7 @@ export default function AcademiePage() {
       </div>
 
       {/* Bottom banner */}
-      <div className="mx-6 mb-16 overflow-hidden rounded-2xl" style={{ background: "linear-gradient(135deg, #3D5AF1, #00C49A)" }}>
+      <div className="mx-6 mb-16 overflow-hidden rounded-2xl" style={{ background: "linear-gradient(160deg, #3D5AF1 0%, #1a2456 100%)" }}>
         <div className="px-8 py-8 text-center text-white">
           <p className="text-lg font-semibold">Vous méritez un outil à la hauteur de votre impact.</p>
           <p className="mt-1 text-sm text-white/70">Déjà client AssoConnect ? Connectez-vous pour synchroniser votre progression.</p>

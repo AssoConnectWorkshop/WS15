@@ -7,6 +7,8 @@ import {
   BookOpen, Play, Award, TrendingUp, Target, Users, Wallet,
   FileText, Mic, ExternalLink,
 } from "lucide-react";
+import LeadModal from "./LeadModal";
+import SSOBar from "./SSOBar";
 import {
   ACADEMY_CONTENT,
   getTotalPoints,
@@ -293,11 +295,15 @@ function ParcoursSection({ parcours, progress, onToggleArticle, accentColor }: {
   );
 }
 
-export default function AcademieRoleClient({ roleId }: { roleId: string }) {
+const LEAD_TRIGGER = 2;
+const LEAD_KEY = "academy-lead-captured";
+
+export default function AcademieRoleClient({ roleId, userEmail }: { roleId: string; userEmail: string | null }) {
   const role = ACADEMY_CONTENT[roleId as keyof typeof ACADEMY_CONTENT] as RoleConfig | undefined;
   const [progress, setProgress] = useState<Progress>({ completedArticles: new Set(), unlockedBadges: new Set() });
   const [mounted, setMounted] = useState(false);
   const [justUnlocked, setJustUnlocked] = useState<string | null>(null);
+  const [showLead, setShowLead] = useState(false);
 
   useEffect(() => { setProgress(loadProgress()); setMounted(true); }, []);
 
@@ -321,9 +327,13 @@ export default function AcademieRoleClient({ roleId }: { roleId: string }) {
       next.completedArticles.has(id) ? next.completedArticles.delete(id) : next.completedArticles.add(id);
       const checked = checkBadges(next);
       saveProgress(checked);
+      // Trigger lead modal after LEAD_TRIGGER completions for non-authenticated users
+      if (!userEmail && !localStorage.getItem(LEAD_KEY) && checked.completedArticles.size >= LEAD_TRIGGER) {
+        setTimeout(() => setShowLead(true), 600);
+      }
       return checked;
     });
-  }, [checkBadges]);
+  }, [checkBadges, userEmail]);
 
   if (!role) return (
     <div className="flex min-h-screen items-center justify-center">
@@ -335,6 +345,9 @@ export default function AcademieRoleClient({ roleId }: { roleId: string }) {
   );
 
   const accentColor = role.color === "blue" ? "#3D5AF1" : "#00C49A";
+  const headerGradient = role.color === "blue"
+    ? "linear-gradient(135deg, #3D5AF1 0%, #1a2456 100%)"
+    : "linear-gradient(135deg, #00C49A 0%, #005c48 100%)";
   const totalPts = getTotalPoints(role);
   const allIds = getAllArticleIds(role);
   const earnedPts = role.parcours.flatMap((p) => p.missions)
@@ -351,6 +364,18 @@ export default function AcademieRoleClient({ roleId }: { roleId: string }) {
 
   return (
     <div className="min-h-screen bg-[#f8f9ff]">
+      {showLead && (
+        <LeadModal
+          defaultRole={roleId}
+          onClose={() => {
+            setShowLead(false);
+            localStorage.setItem(LEAD_KEY, "1");
+          }}
+        />
+      )}
+
+      <SSOBar userEmail={userEmail} />
+
       {/* Badge toast */}
       {justUnlocked && (
         <div className="fixed right-4 top-4 z-50 animate-pop-in rounded-2xl border border-amber-200 bg-white px-5 py-4 shadow-2xl">
@@ -367,7 +392,7 @@ export default function AcademieRoleClient({ roleId }: { roleId: string }) {
       )}
 
       {/* Header */}
-      <div style={{ background: `linear-gradient(135deg, ${accentColor} 0%, ${role.color === "blue" ? "#1a2456" : "#006b55"} 100%)` }}>
+      <div style={{ background: headerGradient }}>
         <div className="mx-auto max-w-3xl px-6 py-8">
           <Link href="/academie" className="mb-5 inline-flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors">
             <ChevronLeft className="h-4 w-4" /> Retour
@@ -433,7 +458,7 @@ export default function AcademieRoleClient({ roleId }: { roleId: string }) {
         ))}
 
         {globalPct === 100 && (
-          <div className="rounded-3xl p-8 text-center text-white" style={{ background: `linear-gradient(135deg, ${accentColor}, #00C49A)` }}>
+          <div className="rounded-3xl p-8 text-center text-white" style={{ background: headerGradient }}>
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: "rgba(255,255,255,0.2)" }}>
               <Award className="h-8 w-8 text-white" />
             </div>
