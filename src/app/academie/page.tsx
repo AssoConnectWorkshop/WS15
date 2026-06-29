@@ -1,185 +1,142 @@
 import Link from "next/link";
-import { BookOpen, Award, Zap, ChevronRight, Building2, Wallet, Users, Target, TrendingUp, Play } from "lucide-react";
-import { ACADEMY_CONTENT, getTotalXP, type RoleConfig } from "@/lib/academy-content";
+import { ACADEMY_CONTENT, getTotalPoints, type RoleConfig } from "@/lib/academy-content";
 
-const RoleIcon = ({ icon, className, style }: { icon: RoleConfig["icon"]; className?: string; style?: React.CSSProperties }) => {
-  if (icon === "president") {
-    return (
-      <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5a3 3 0 0 1 6 0v5" />
-        <path d="M9 10h.01M15 10h.01M9 14h6" />
-      </svg>
-    );
-  }
+function RoleIcon({ icon }: { icon: RoleConfig["icon"] }) {
+  if (icon === "president") return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round" className="h-full w-full">
+      <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5a3 3 0 0 1 6 0v5M9 10h.01M15 10h.01M9 14h6" />
+    </svg>
+  );
   return (
-    <svg className={className} style={style} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round" className="h-full w-full">
       <rect x="2" y="5" width="20" height="14" rx="2" />
       <path d="M2 10h20M7 15h2M12 15h5" />
     </svg>
-  );
-};
-
-const parcourIcons: Record<string, React.ReactNode> = {
-  gouvernance: <Target className="h-4 w-4" />,
-  adhesion: <Users className="h-4 w-4" />,
-  comptabilite: <TrendingUp className="h-4 w-4" />,
-  cotisations: <Wallet className="h-4 w-4" />,
-};
-
-function RoleCard({ role }: { role: RoleConfig }) {
-  const totalXP = getTotalXP(role);
-  const totalMissions = role.parcours.flatMap((p) => p.missions).length;
-  const isBlue = role.color === "blue";
-
-  return (
-    <Link
-      href={`/academie/${role.id}`}
-      className="group relative flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5"
-    >
-      {/* Color band top */}
-      <div
-        className="h-1.5 w-full"
-        style={{ background: isBlue ? "#3D5AF1" : "#00C49A" }}
-      />
-
-      <div className="flex flex-1 flex-col p-8">
-        {/* Icon */}
-        <div
-          className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl"
-          style={{ background: isBlue ? "#eef1fe" : "#e6faf6" }}
-        >
-          <RoleIcon
-            icon={role.icon}
-            className="h-7 w-7"
-            style={{ color: isBlue ? "#3D5AF1" : "#00C49A" } as React.CSSProperties}
-          />
-        </div>
-
-        <h2 className="mb-1 text-xl font-bold text-gray-900">{role.title}</h2>
-        <p className="mb-6 text-sm text-gray-500">{role.subtitle}</p>
-
-        {/* Stats */}
-        <div className="mb-6 grid grid-cols-3 gap-3">
-          {[
-            { value: totalMissions, label: "missions" },
-            { value: role.parcours.length, label: "badges" },
-            { value: totalXP, label: "XP max" },
-          ].map((s) => (
-            <div key={s.label} className="rounded-xl bg-gray-50 p-3 text-center">
-              <div className="text-lg font-bold text-gray-900">{s.value}</div>
-              <div className="text-xs text-gray-400">{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Parcours list */}
-        <div className="mb-6 space-y-2">
-          {role.parcours.map((p) => (
-            <div key={p.id} className="flex items-center gap-2">
-              <div
-                className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-                style={{ background: isBlue ? "#eef1fe" : "#e6faf6", color: isBlue ? "#3D5AF1" : "#00C49A" } as React.CSSProperties}
-              >
-                <div style={{ color: isBlue ? "#3D5AF1" : "#00C49A" }}>
-                  {parcourIcons[p.id] ?? <BookOpen className="h-3 w-3" />}
-                </div>
-              </div>
-              <span className="text-sm text-gray-600">{p.title}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div className="mt-auto">
-          <div
-            className="flex items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-opacity group-hover:opacity-90"
-            style={{ background: isBlue ? "#3D5AF1" : "#00C49A" }}
-          >
-            Démarrer mon parcours
-            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </div>
-        </div>
-      </div>
-    </Link>
   );
 }
 
 export default function AcademiePage() {
   const roles = Object.values(ACADEMY_CONTENT);
+  const [president, tresorier] = roles;
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff]">
-      {/* Nav */}
-      <nav className="border-b border-gray-100 bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: "#3D5AF1" }}>
-              <BookOpen className="h-4 w-4 text-white" />
-            </div>
-            <span className="font-bold text-gray-900">AssoConnect Académie</span>
+    <div className="min-h-screen bg-white">
+      {/* Header bar */}
+      <div className="fixed top-0 left-0 right-0 z-20 flex items-center justify-between px-8 py-4">
+        <div className="flex items-center gap-2">
+          <div className="h-2 w-2 rounded-full" style={{ background: "#3D5AF1" }} />
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-900">AssoConnect Académie</span>
+        </div>
+        <span className="rounded-full border border-gray-200 px-3 py-1 text-xs font-medium text-gray-500">
+          Accès 100% gratuit
+        </span>
+      </div>
+
+      {/* Split-screen hero */}
+      <div className="flex min-h-screen flex-col md:flex-row">
+        {/* President side */}
+        <Link
+          href={`/academie/${president.id}`}
+          className="group relative flex flex-1 flex-col items-start justify-end overflow-hidden p-10 md:p-16"
+          style={{ background: "#3D5AF1", minHeight: "50vh" }}
+        >
+          {/* Big background number */}
+          <div className="pointer-events-none absolute right-0 top-0 select-none text-[28vw] font-black leading-none text-white/5 md:text-[14vw]">
+            01
           </div>
-          <span className="rounded-full px-3 py-1 text-xs font-medium text-white" style={{ background: "#00C49A" }}>
-            Accès gratuit
-          </span>
-        </div>
-      </nav>
 
-      {/* Hero */}
-      <div className="px-6 py-16 text-center" style={{ background: "linear-gradient(160deg, #3D5AF1 0%, #1a2456 100%)" }}>
-        <div className="mx-auto max-w-3xl">
-          <div
-            className="mb-4 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm text-white/80"
-            style={{ background: "rgba(255,255,255,0.12)" }}
-          >
-            <Zap className="h-4 w-4" style={{ color: "#00C49A" }} />
-            Formation gratuite pour les associations
+          {/* Icon */}
+          <div className="mb-8 h-16 w-16 text-white/60 transition-all duration-500 group-hover:text-white group-hover:scale-110">
+            <RoleIcon icon="president" />
           </div>
-          <h1 className="mb-4 text-4xl font-extrabold tracking-tight text-white md:text-5xl">
-            Gérer une asso est un noble casse-tête.{" "}
-            <span style={{ color: "#00C49A" }}>On vous aide.</span>
-          </h1>
-          <p className="mx-auto max-w-xl text-lg text-white/70">
-            Parcours de formation gamifiés, adaptés à votre rôle. Lisez des articles, débloquez des badges, montez en compétences.
-          </p>
-        </div>
-      </div>
 
-      {/* Stats bar */}
-      <div className="border-b border-gray-100 bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-5xl items-center justify-center gap-10 text-sm text-gray-500">
-          {[
-            { icon: <BookOpen className="h-4 w-4" style={{ color: "#3D5AF1" }} />, text: <><strong className="text-gray-900">2 rôles</strong> disponibles</> },
-            { icon: <Award className="h-4 w-4" style={{ color: "#3D5AF1" }} />, text: <><strong className="text-gray-900">4 badges</strong> à débloquer</> },
-            { icon: <Play className="h-4 w-4" style={{ color: "#3D5AF1" }} />, text: <><strong className="text-gray-900">Articles & vidéos</strong> sélectionnés</> },
-          ].map((s, i) => (
-            <div key={i} className="flex items-center gap-2">
-              {s.icon}
-              <span>{s.text}</span>
+          <div className="relative z-10">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/50">
+              Parcours {getTotalPoints(president)} pts · {president.parcours.flatMap(p => p.missions).length} missions
+            </p>
+            <h2 className="mb-4 text-4xl font-black leading-tight text-white md:text-5xl lg:text-6xl">
+              Présidente<br />ou président
+            </h2>
+            <p className="mb-8 max-w-xs text-white/70">
+              {president.subtitle}
+            </p>
+
+            <div className="inline-flex items-center gap-3 rounded-full border-2 border-white/30 px-6 py-3 text-sm font-bold text-white transition-all duration-300 group-hover:bg-white group-hover:text-[#3D5AF1]">
+              Commencer
+              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
             </div>
-          ))}
-        </div>
+          </div>
+
+          {/* Parcours pills */}
+          <div className="absolute bottom-8 right-8 flex flex-col items-end gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            {president.parcours.map((p) => (
+              <span key={p.id} className="rounded-full bg-white/20 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+                {p.title}
+              </span>
+            ))}
+          </div>
+        </Link>
+
+        {/* Divider on mobile */}
+        <div className="h-px bg-white md:hidden" />
+
+        {/* Tresorier side */}
+        <Link
+          href={`/academie/${tresorier.id}`}
+          className="group relative flex flex-1 flex-col items-start justify-end overflow-hidden p-10 md:p-16"
+          style={{ background: "#f0fdf9", minHeight: "50vh" }}
+        >
+          {/* Big background number */}
+          <div className="pointer-events-none absolute right-0 top-0 select-none text-[28vw] font-black leading-none text-[#00C49A]/10 md:text-[14vw]">
+            02
+          </div>
+
+          {/* Vertical line accent */}
+          <div className="absolute left-0 top-0 h-full w-1" style={{ background: "#00C49A" }} />
+
+          {/* Icon */}
+          <div className="mb-8 h-16 w-16 transition-all duration-500 group-hover:scale-110" style={{ color: "#00C49A" }}>
+            <RoleIcon icon="tresorier" />
+          </div>
+
+          <div className="relative z-10">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-widest" style={{ color: "#00C49A" }}>
+              Parcours {getTotalPoints(tresorier)} pts · {tresorier.parcours.flatMap(p => p.missions).length} missions
+            </p>
+            <h2 className="mb-4 text-4xl font-black leading-tight text-gray-900 md:text-5xl lg:text-6xl">
+              Trésorière<br />ou trésorier
+            </h2>
+            <p className="mb-8 max-w-xs text-gray-500">
+              {tresorier.subtitle}
+            </p>
+
+            <div
+              className="inline-flex items-center gap-3 rounded-full px-6 py-3 text-sm font-bold text-white transition-all duration-300 group-hover:opacity-90"
+              style={{ background: "#00C49A" }}
+            >
+              Commencer
+              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </div>
+          </div>
+
+          {/* Parcours pills */}
+          <div className="absolute bottom-8 right-8 flex flex-col items-end gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+            {tresorier.parcours.map((p) => (
+              <span key={p.id} className="rounded-full px-3 py-1 text-xs font-medium text-white backdrop-blur-sm" style={{ background: "#00C49A" }}>
+                {p.title}
+              </span>
+            ))}
+          </div>
+        </Link>
       </div>
 
-      {/* Role cards */}
-      <div className="mx-auto max-w-5xl px-6 py-16">
-        <div className="mb-10 text-center">
-          <h2 className="mb-2 text-2xl font-bold text-gray-900">Quel est votre rôle ?</h2>
-          <p className="text-gray-500">Choisissez votre profil pour accéder à un parcours personnalisé.</p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          {roles.map((role) => (
-            <RoleCard key={role.id} role={role} />
-          ))}
-        </div>
-      </div>
-
-      {/* Bottom banner */}
-      <div className="mx-6 mb-16 overflow-hidden rounded-2xl" style={{ background: "linear-gradient(160deg, #3D5AF1 0%, #1a2456 100%)" }}>
-        <div className="px-8 py-8 text-center text-white">
-          <p className="text-lg font-semibold">Vous méritez un outil à la hauteur de votre impact.</p>
-          <p className="mt-1 text-sm text-white/70">Déjà client AssoConnect ? Connectez-vous pour synchroniser votre progression.</p>
-        </div>
+      {/* Bottom strip */}
+      <div className="flex items-center justify-center gap-8 border-t border-gray-100 py-5 text-xs text-gray-400">
+        <span>4 badges</span>
+        <span className="h-1 w-1 rounded-full bg-gray-300" />
+        <span>Articles & vidéos sélectionnés</span>
+        <span className="h-1 w-1 rounded-full bg-gray-300" />
+        <span>Progression sauvegardée</span>
       </div>
     </div>
   );

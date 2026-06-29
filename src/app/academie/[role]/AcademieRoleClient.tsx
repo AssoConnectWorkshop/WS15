@@ -2,44 +2,28 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { Check, Play, FileText, ExternalLink, Award, ChevronLeft, ChevronDown } from "lucide-react";
 import {
-  ChevronLeft, ChevronDown, Check, Lock, Star,
-  BookOpen, Play, Award, TrendingUp, Target, Users, Wallet,
-  FileText, Mic, ExternalLink,
-} from "lucide-react";
+  ACADEMY_CONTENT, getTotalPoints, getParcoursPoints, getAllArticleIds,
+  type RoleConfig, type Parcours, type Mission, type Article,
+} from "@/lib/academy-content";
 import LeadModal from "./LeadModal";
 import SSOBar from "./SSOBar";
-import {
-  ACADEMY_CONTENT,
-  getTotalPoints,
-  getParcoursPoints,
-  getAllArticleIds,
-  type RoleConfig,
-  type Parcours,
-  type Mission,
-  type Article,
-} from "@/lib/academy-content";
 
-type Progress = {
-  completedArticles: Set<string>;
-  unlockedBadges: Set<string>;
-};
+type Progress = { completedArticles: Set<string>; unlockedBadges: Set<string> };
 
 const STORAGE_KEY = "academy-progress-v1";
+const LEAD_TRIGGER = 2;
+const LEAD_KEY = "academy-lead-captured";
 
 function loadProgress(): Progress {
   if (typeof window === "undefined") return { completedArticles: new Set(), unlockedBadges: new Set() };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return { completedArticles: new Set(), unlockedBadges: new Set() };
-    const data = JSON.parse(raw);
-    return {
-      completedArticles: new Set(data.completedArticles ?? []),
-      unlockedBadges: new Set(data.unlockedBadges ?? []),
-    };
-  } catch {
-    return { completedArticles: new Set(), unlockedBadges: new Set() };
-  }
+    const d = JSON.parse(raw);
+    return { completedArticles: new Set(d.completedArticles ?? []), unlockedBadges: new Set(d.unlockedBadges ?? []) };
+  } catch { return { completedArticles: new Set(), unlockedBadges: new Set() }; }
 }
 
 function saveProgress(p: Progress) {
@@ -48,27 +32,6 @@ function saveProgress(p: Progress) {
     unlockedBadges: [...p.unlockedBadges],
   }));
 }
-
-const ARTICLE_TYPE_CONFIG = {
-  article: { Icon: FileText, label: "Article",  bg: "#eef1fe", color: "#3D5AF1" },
-  video:   { Icon: Play,     label: "Vidéo",    bg: "#fef2f2", color: "#ef4444" },
-  webinar: { Icon: Mic,      label: "Webinar",  bg: "#f3e8ff", color: "#9333ea" },
-} as const;
-
-const PARCOURS_ICONS: Record<string, React.ReactNode> = {
-  gouvernance:  <Target className="h-4 w-4" />,
-  adhesion:     <Users className="h-4 w-4" />,
-  comptabilite: <TrendingUp className="h-4 w-4" />,
-  cotisations:  <Wallet className="h-4 w-4" />,
-};
-
-const LEVELS = [
-  { min: 0,    name: "Débutant",   color: "#94a3b8" },
-  { min: 200,  name: "Initié",     color: "#3D5AF1" },
-  { min: 500,  name: "Praticien",  color: "#8b5cf6" },
-  { min: 900,  name: "Expert",     color: "#f59e0b" },
-  { min: 9999, name: "Maître",     color: "#ef4444" },
-];
 
 function RoleIcon({ icon, className }: { icon: RoleConfig["icon"]; className?: string }) {
   if (icon === "president") return (
@@ -87,82 +50,83 @@ function RoleIcon({ icon, className }: { icon: RoleConfig["icon"]; className?: s
 function YouTubeEmbed({ videoId, title }: { videoId: string; title: string }) {
   const [playing, setPlaying] = useState(false);
   const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-
-  if (playing) {
-    return (
-      <div className="relative mt-3 overflow-hidden rounded-xl" style={{ paddingBottom: "56.25%" }}>
-        <iframe
-          className="absolute inset-0 h-full w-full"
-          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
-          title={title}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        />
-      </div>
-    );
-  }
-
+  if (playing) return (
+    <div className="relative mt-3 overflow-hidden rounded-2xl" style={{ paddingBottom: "56.25%" }}>
+      <iframe className="absolute inset-0 h-full w-full" allowFullScreen
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`} title={title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
+    </div>
+  );
   return (
-    <button
-      onClick={() => setPlaying(true)}
-      className="group relative mt-3 block w-full overflow-hidden rounded-xl"
-    >
+    <button onClick={() => setPlaying(true)} className="group relative mt-3 block w-full overflow-hidden rounded-2xl">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={thumb} alt={title} className="w-full object-cover" style={{ aspectRatio: "16/9" }} />
-      <div className="absolute inset-0 flex items-center justify-center bg-black/30 transition-all group-hover:bg-black/20">
-        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white/90 shadow-lg transition-transform group-hover:scale-110">
-          <Play className="h-6 w-6 translate-x-0.5 text-red-600" fill="currentColor" />
+      <div className="absolute inset-0 flex items-center justify-center bg-black/40 transition-all group-hover:bg-black/25">
+        <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-xl transition-transform group-hover:scale-110">
+          <Play className="h-6 w-6 translate-x-0.5 fill-red-600 text-red-600" />
         </div>
-      </div>
-      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent px-4 py-3">
-        <p className="text-left text-sm font-medium text-white">{title}</p>
       </div>
     </button>
   );
 }
 
-function ArticleCard({ article, completed, onToggle }: { article: Article; completed: boolean; onToggle: () => void }) {
-  const tc = ARTICLE_TYPE_CONFIG[article.type] ?? ARTICLE_TYPE_CONFIG.article;
+function ArticleRow({ article, completed, onToggle, accent }: {
+  article: Article; completed: boolean; onToggle: () => void; accent: string;
+}) {
   const isVideo = article.type === "video" && article.youtubeId;
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className={`overflow-hidden rounded-2xl border transition-all ${completed ? "border-[#00C49A]/40 bg-[#e6faf6]/60" : "border-gray-100 bg-white shadow-sm hover:shadow-md"}`}>
-      <div className="flex items-start gap-3 p-4">
-        <button
-          onClick={onToggle}
-          className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-            completed ? "border-[#00C49A] bg-[#00C49A] text-white" : "border-gray-200 hover:border-[#3D5AF1]"
-          }`}
+    <div className={`border-b border-gray-100 last:border-0 transition-colors ${completed ? "opacity-60" : ""}`}>
+      <div className="flex items-center gap-4 py-4">
+        {/* Check button */}
+        <button onClick={onToggle}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all"
+          style={completed
+            ? { background: accent, borderColor: accent, color: "white" }
+            : { borderColor: "#e5e7eb" }
+          }
         >
-          {completed && <Check className="h-3 w-3" strokeWidth={3} />}
+          {completed && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
         </button>
 
-        <div className="flex-1 min-w-0">
-          <div className="mb-1.5 flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium" style={{ background: tc.bg, color: tc.color }}>
-              <tc.Icon className="h-3 w-3" />
-              {tc.label}
-            </span>
-            <span className="text-xs text-gray-400">{article.duration}</span>
-          </div>
+        {/* Type badge */}
+        <span className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wide ${
+          article.type === "video" ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-500"
+        }`}>
+          {article.type === "video" ? "Vidéo" : "Article"}
+        </span>
 
+        {/* Title */}
+        <div className="flex-1 min-w-0">
           {isVideo ? (
-            <p className={`font-medium leading-snug ${completed ? "text-gray-400 line-through" : "text-gray-900"}`}>
+            <button onClick={() => setExpanded(e => !e)} className="text-left font-semibold text-gray-900 hover:underline">
               {article.title}
-            </p>
+            </button>
           ) : (
             <a href={article.url} target="_blank" rel="noopener noreferrer"
-              className={`group inline-flex items-start gap-1 font-medium leading-snug transition-colors hover:text-[#3D5AF1] ${completed ? "text-gray-400 line-through" : "text-gray-900"}`}>
+              className="group inline-flex items-center gap-1.5 font-semibold text-gray-900 hover:underline">
               {article.title}
-              <ExternalLink className="mt-0.5 h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+              <ExternalLink className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-40 transition-opacity" />
             </a>
           )}
-          <p className="mt-1 text-sm text-gray-500">{article.description}</p>
+          <p className="text-sm text-gray-400 mt-0.5 truncate">{article.description}</p>
+        </div>
+
+        {/* Duration + expand for video */}
+        <div className="flex shrink-0 items-center gap-2">
+          <span className="text-xs text-gray-400">{article.duration}</span>
+          {isVideo && (
+            <button onClick={() => setExpanded(e => !e)}
+              className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100">
+              <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
+            </button>
+          )}
         </div>
       </div>
 
-      {isVideo && article.youtubeId && (
-        <div className="px-4 pb-4">
+      {isVideo && expanded && article.youtubeId && (
+        <div className="pb-4">
           <YouTubeEmbed videoId={article.youtubeId} title={article.title} />
         </div>
       )}
@@ -170,58 +134,64 @@ function ArticleCard({ article, completed, onToggle }: { article: Article; compl
   );
 }
 
-function MissionCard({ mission, progress, onToggleArticle, accentColor }: {
-  mission: Mission; progress: Progress; onToggleArticle: (id: string) => void; accentColor: string;
+function MissionBlock({ mission, progress, onToggle, accent }: {
+  mission: Mission; progress: Progress; onToggle: (id: string) => void; accent: string;
 }) {
-  const completedCount = mission.articles.filter((a) => progress.completedArticles.has(a.id)).length;
+  const done = mission.articles.filter(a => progress.completedArticles.has(a.id)).length;
   const total = mission.articles.length;
-  const isDone = completedCount === total;
-  const pct = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+  const isDone = done === total;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const [open, setOpen] = useState(false);
 
   return (
-    <div className={`overflow-hidden rounded-2xl border-2 transition-all duration-200 ${isDone ? "border-[#00C49A]/50 bg-[#e6faf6]/30" : "border-gray-100 bg-white"}`}>
-      <button onClick={() => setOpen((o) => !o)} className="flex w-full items-center gap-4 p-5 text-left">
-        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-white font-bold text-sm"
-          style={{ background: isDone ? "#00C49A" : accentColor }}>
-          {isDone ? <Check className="h-5 w-5" strokeWidth={2.5} /> : `${completedCount}/${total}`}
-          {isDone && (
-            <div className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400">
-              <Star className="h-3 w-3 fill-white text-white" />
-            </div>
-          )}
+    <div className="overflow-hidden">
+      <button onClick={() => setOpen(o => !o)}
+        className="group flex w-full items-center gap-5 py-5 text-left transition-all hover:opacity-80"
+      >
+        {/* Progress ring / number */}
+        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
+          <svg className="absolute inset-0 -rotate-90" viewBox="0 0 48 48">
+            <circle cx="24" cy="24" r="20" fill="none" stroke="#f0f0f0" strokeWidth="3" />
+            <circle cx="24" cy="24" r="20" fill="none" strokeWidth="3"
+              stroke={isDone ? "#00C49A" : accent}
+              strokeDasharray={`${2 * Math.PI * 20}`}
+              strokeDashoffset={`${2 * Math.PI * 20 * (1 - pct / 100)}`}
+              strokeLinecap="round"
+              className="transition-all duration-700"
+            />
+          </svg>
+          {isDone
+            ? <Check className="h-5 w-5" style={{ color: "#00C49A" }} strokeWidth={2.5} />
+            : <span className="text-sm font-black" style={{ color: accent }}>{pct}%</span>
+          }
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h4 className="font-semibold text-gray-900">{mission.title}</h4>
-            {isDone && (
-              <span className="inline-flex items-center gap-0.5 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
-                <Star className="h-3 w-3 fill-amber-500 text-amber-500" /> +{mission.points} pts
-              </span>
-            )}
-          </div>
+          <h4 className="font-bold text-gray-900">{mission.title}</h4>
           <p className="text-sm text-gray-400">{mission.description}</p>
-          <div className="mt-2 h-1 overflow-hidden rounded-full bg-gray-100">
-            <div className="h-full rounded-full transition-all duration-700"
-              style={{ width: `${pct}%`, background: isDone ? "#00C49A" : accentColor }} />
-          </div>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="rounded-full px-2 py-1 text-xs font-semibold" style={{ background: `${accentColor}15`, color: accentColor }}>
-            {mission.points} pts
-          </span>
+        <div className="flex shrink-0 items-center gap-3">
+          {isDone && (
+            <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: "#e6faf6", color: "#00a882" }}>
+              +{mission.points} pts
+            </span>
+          )}
+          {!isDone && (
+            <span className="text-xs font-medium text-gray-400">{mission.points} pts</span>
+          )}
           <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
         </div>
       </button>
 
       {open && (
-        <div className="space-y-3 border-t border-gray-100 p-4">
-          {mission.articles.map((article) => (
-            <ArticleCard key={article.id} article={article}
-              completed={progress.completedArticles.has(article.id)}
-              onToggle={() => onToggleArticle(article.id)} />
+        <div className="ml-17 pb-4 pl-[68px] pr-2">
+          {mission.articles.map(a => (
+            <ArticleRow key={a.id} article={a}
+              completed={progress.completedArticles.has(a.id)}
+              onToggle={() => onToggle(a.id)}
+              accent={accent}
+            />
           ))}
         </div>
       )}
@@ -229,105 +199,83 @@ function MissionCard({ mission, progress, onToggleArticle, accentColor }: {
   );
 }
 
-function BadgeCard({ badge, unlocked, accentColor }: { badge: Parcours["badge"]; unlocked: boolean; accentColor: string }) {
-  return (
-    <div className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 p-3 text-center transition-all min-w-[80px] ${
-      unlocked ? "border-amber-300 bg-amber-50 shadow-md shadow-amber-100/50" : "border-gray-100 bg-gray-50 opacity-60"
-    }`}>
-      <div className={`flex h-10 w-10 items-center justify-center rounded-xl transition-all ${unlocked ? "bg-amber-100" : "bg-gray-200"}`}>
-        {unlocked
-          ? <Award className="h-5 w-5 text-amber-600" />
-          : <Lock className="h-4 w-4 text-gray-400" />
-        }
-      </div>
-      <p className="text-xs font-semibold text-gray-700 leading-tight">{badge.name}</p>
-      {unlocked && <span className="rounded-full bg-amber-200 px-1.5 py-0.5 text-xs font-bold text-amber-800">Obtenu !</span>}
-    </div>
-  );
-}
-
-function ParcoursSection({ parcours, progress, onToggleArticle, accentColor }: {
-  parcours: Parcours; progress: Progress; onToggleArticle: (id: string) => void; accentColor: string;
+function ParcoursBlock({ parcours, progress, onToggle, accent }: {
+  parcours: Parcours; progress: Progress; onToggle: (id: string) => void; accent: string;
 }) {
-  const allIds = parcours.missions.flatMap((m) => m.articles.map((a) => a.id));
-  const completedCount = allIds.filter((id) => progress.completedArticles.has(id)).length;
+  const allIds = parcours.missions.flatMap(m => m.articles.map(a => a.id));
+  const completedCount = allIds.filter(id => progress.completedArticles.has(id)).length;
   const totalPts = getParcoursPoints(parcours);
   const earnedPts = parcours.missions
-    .filter((m) => m.articles.every((a) => progress.completedArticles.has(a.id)))
-    .reduce((sum, m) => sum + m.points, 0);
-  const badgeUnlocked = progress.unlockedBadges.has(parcours.badge.id);
+    .filter(m => m.articles.every(a => progress.completedArticles.has(a.id)))
+    .reduce((s, m) => s + m.points, 0);
+  const unlocked = progress.unlockedBadges.has(parcours.badge.id);
   const pct = allIds.length > 0 ? Math.round((completedCount / allIds.length) * 100) : 0;
 
   return (
-    <section className="rounded-3xl border border-gray-100 bg-white p-6 shadow-sm">
-      <div className="mb-5 flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl" style={{ background: `${accentColor}15`, color: accentColor }}>
-            {PARCOURS_ICONS[parcours.id] ?? <BookOpen className="h-4 w-4" />}
-          </div>
-          <div>
-            <h3 className="font-bold text-gray-900">{parcours.title}</h3>
-            <p className="text-sm text-gray-400">{parcours.description}</p>
-          </div>
+    <section>
+      {/* Parcours header */}
+      <div className="mb-2 flex items-center justify-between">
+        <div>
+          <h3 className="text-xl font-black text-gray-900">{parcours.title}</h3>
+          <p className="text-sm text-gray-400">{parcours.description}</p>
         </div>
-        <BadgeCard badge={parcours.badge} unlocked={badgeUnlocked} accentColor={accentColor} />
+        {/* Badge */}
+        <div className={`flex flex-col items-center gap-1 rounded-2xl p-3 text-center transition-all ${
+          unlocked ? "bg-amber-50 ring-2 ring-amber-300" : "bg-gray-50 opacity-50"
+        }`}>
+          <Award className={`h-6 w-6 ${unlocked ? "text-amber-500" : "text-gray-300"}`} />
+          <span className="max-w-[70px] text-xs font-semibold leading-tight text-gray-700">{parcours.badge.name}</span>
+        </div>
       </div>
 
-      <div className="mb-5 flex items-center gap-3 rounded-2xl p-3" style={{ background: `${accentColor}08` }}>
-        <div className="flex-1">
-          <div className="mb-1 flex justify-between text-xs text-gray-500">
-            <span>{completedCount}/{allIds.length} ressources</span>
-            <span className="font-semibold" style={{ color: accentColor }}>{earnedPts}/{totalPts} pts</span>
-          </div>
-          <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-            <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: accentColor }} />
-          </div>
+      {/* Progress strip */}
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex-1 h-1 overflow-hidden rounded-full bg-gray-100">
+          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: accent }} />
         </div>
-        <div className="text-2xl font-black tabular-nums" style={{ color: accentColor }}>{pct}%</div>
+        <span className="text-xs font-bold tabular-nums" style={{ color: accent }}>{completedCount}/{allIds.length}</span>
+        <span className="text-xs text-gray-400">{earnedPts}/{totalPts} pts</span>
       </div>
 
-      <div className="space-y-3">
-        {parcours.missions.map((m) => (
-          <MissionCard key={m.id} mission={m} progress={progress} onToggleArticle={onToggleArticle} accentColor={accentColor} />
+      {/* Missions */}
+      <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white px-5">
+        {parcours.missions.map(m => (
+          <MissionBlock key={m.id} mission={m} progress={progress} onToggle={onToggle} accent={accent} />
         ))}
       </div>
     </section>
   );
 }
 
-const LEAD_TRIGGER = 2;
-const LEAD_KEY = "academy-lead-captured";
-
 export default function AcademieRoleClient({ roleId, userEmail }: { roleId: string; userEmail: string | null }) {
   const role = ACADEMY_CONTENT[roleId as keyof typeof ACADEMY_CONTENT] as RoleConfig | undefined;
   const [progress, setProgress] = useState<Progress>({ completedArticles: new Set(), unlockedBadges: new Set() });
   const [mounted, setMounted] = useState(false);
-  const [justUnlocked, setJustUnlocked] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
   const [showLead, setShowLead] = useState(false);
 
   useEffect(() => { setProgress(loadProgress()); setMounted(true); }, []);
 
   const checkBadges = useCallback((p: Progress) => {
     if (!role) return p;
-    const updated = { ...p, unlockedBadges: new Set(p.unlockedBadges) };
+    const u = { ...p, unlockedBadges: new Set(p.unlockedBadges) };
     for (const parcours of role.parcours) {
-      const allDone = parcours.missions.flatMap((m) => m.articles).every((a) => updated.completedArticles.has(a.id));
-      if (allDone && !updated.unlockedBadges.has(parcours.badge.id)) {
-        updated.unlockedBadges.add(parcours.badge.id);
-        setJustUnlocked(parcours.badge.name);
-        setTimeout(() => setJustUnlocked(null), 4000);
+      const allDone = parcours.missions.flatMap(m => m.articles).every(a => u.completedArticles.has(a.id));
+      if (allDone && !u.unlockedBadges.has(parcours.badge.id)) {
+        u.unlockedBadges.add(parcours.badge.id);
+        setToast(parcours.badge.name);
+        setTimeout(() => setToast(null), 4000);
       }
     }
-    return updated;
+    return u;
   }, [role]);
 
   const handleToggle = useCallback((id: string) => {
-    setProgress((prev) => {
+    setProgress(prev => {
       const next = { completedArticles: new Set(prev.completedArticles), unlockedBadges: new Set(prev.unlockedBadges) };
       next.completedArticles.has(id) ? next.completedArticles.delete(id) : next.completedArticles.add(id);
       const checked = checkBadges(next);
       saveProgress(checked);
-      // Trigger lead modal after LEAD_TRIGGER completions for non-authenticated users
       if (!userEmail && !localStorage.getItem(LEAD_KEY) && checked.completedArticles.size >= LEAD_TRIGGER) {
         setTimeout(() => setShowLead(true), 600);
       }
@@ -337,135 +285,93 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
 
   if (!role) return (
     <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <p className="text-gray-500">Rôle introuvable.</p>
-        <Link href="/academie" className="mt-4 inline-block underline" style={{ color: "#3D5AF1" }}>Retour</Link>
-      </div>
+      <Link href="/academie" className="underline" style={{ color: "#3D5AF1" }}>← Retour</Link>
     </div>
   );
 
-  const accentColor = role.color === "blue" ? "#3D5AF1" : "#00C49A";
-  const headerGradient = role.color === "blue"
-    ? "linear-gradient(135deg, #3D5AF1 0%, #1a2456 100%)"
-    : "linear-gradient(135deg, #00C49A 0%, #005c48 100%)";
+  const accent = role.color === "blue" ? "#3D5AF1" : "#00C49A";
+  const headerBg = role.color === "blue"
+    ? "linear-gradient(160deg, #3D5AF1 0%, #1a2456 100%)"
+    : "linear-gradient(160deg, #00C49A 0%, #005c48 100%)";
+
   const totalPts = getTotalPoints(role);
   const allIds = getAllArticleIds(role);
-  const earnedPts = role.parcours.flatMap((p) => p.missions)
-    .filter((m) => m.articles.every((a) => progress.completedArticles.has(a.id)))
-    .reduce((sum, m) => sum + m.points, 0);
-  const completedCount = allIds.filter((id) => progress.completedArticles.has(id)).length;
+  const earnedPts = role.parcours.flatMap(p => p.missions)
+    .filter(m => m.articles.every(a => progress.completedArticles.has(a.id)))
+    .reduce((s, m) => s + m.points, 0);
+  const completedCount = allIds.filter(id => progress.completedArticles.has(id)).length;
   const globalPct = allIds.length > 0 ? Math.round((completedCount / allIds.length) * 100) : 0;
-  const unlockedCount = progress.unlockedBadges.size;
-  const totalBadges = role.parcours.length;
-
-  const level = [...LEVELS].reverse().find((l) => earnedPts >= l.min) ?? LEVELS[0];
-  const nextLevel = LEVELS[LEVELS.indexOf(level) + 1];
-  const levelPct = nextLevel ? Math.round(((earnedPts - level.min) / (nextLevel.min - level.min)) * 100) : 100;
 
   return (
-    <div className="min-h-screen bg-[#f8f9ff]">
-      {showLead && (
-        <LeadModal
-          defaultRole={roleId}
-          onClose={() => {
-            setShowLead(false);
-            localStorage.setItem(LEAD_KEY, "1");
-          }}
-        />
-      )}
+    <div className="min-h-screen bg-[#fafafa]">
+      {showLead && <LeadModal defaultRole={roleId} onClose={() => { setShowLead(false); localStorage.setItem(LEAD_KEY, "1"); }} />}
 
       <SSOBar userEmail={userEmail} />
 
       {/* Badge toast */}
-      {justUnlocked && (
-        <div className="fixed right-4 top-4 z-50 animate-pop-in rounded-2xl border border-amber-200 bg-white px-5 py-4 shadow-2xl">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100">
-              <Award className="h-6 w-6 text-amber-600" />
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">Badge débloqué !</p>
-              <p className="font-bold text-gray-900">{justUnlocked}</p>
-            </div>
+      {toast && (
+        <div className="fixed right-5 top-5 z-50 animate-pop-in flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-2xl ring-1 ring-amber-200">
+          <Award className="h-6 w-6 text-amber-500" />
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">Badge débloqué</p>
+            <p className="font-bold text-gray-900">{toast}</p>
           </div>
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ background: headerGradient }}>
-        <div className="mx-auto max-w-3xl px-6 py-8">
-          <Link href="/academie" className="mb-5 inline-flex items-center gap-1 text-sm text-white/60 hover:text-white transition-colors">
+      {/* Hero header — tall, bold */}
+      <div style={{ background: headerBg }}>
+        <div className="mx-auto max-w-4xl px-8 pb-12 pt-8">
+          <Link href="/academie" className="mb-8 inline-flex items-center gap-1.5 text-sm font-medium text-white/50 hover:text-white transition-colors">
             <ChevronLeft className="h-4 w-4" /> Retour
           </Link>
 
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl" style={{ background: "rgba(255,255,255,0.15)" }}>
-                <RoleIcon icon={role.icon} className="h-7 w-7 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-extrabold text-white">{role.title}</h1>
-                <p className="text-sm text-white/60">{role.subtitle}</p>
-              </div>
+          <div className="flex items-end justify-between gap-8">
+            <div>
+              <RoleIcon icon={role.icon} className="mb-6 h-10 w-10 text-white/50" />
+              <h1 className="text-5xl font-black leading-none text-white md:text-7xl">
+                {role.title.split(" ou ").map((part, i) => (
+                  <span key={i}>
+                    {i > 0 && <span className="block text-white/40 text-3xl md:text-4xl font-light">ou</span>}
+                    {part}
+                  </span>
+                ))}
+              </h1>
+              <p className="mt-4 text-white/60 max-w-md">{role.subtitle}</p>
             </div>
 
-            {/* Level pill */}
-            <div className="shrink-0 rounded-2xl px-4 py-3 text-center" style={{ background: "rgba(255,255,255,0.12)" }}>
-              <div className="text-xs text-white/60 mb-0.5">Niveau</div>
-              <div className="text-xl font-black text-white">{level.name}</div>
-              {nextLevel && (
-                <div className="mt-1 h-1 w-16 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.2)" }}>
-                  <div className="h-full rounded-full bg-white" style={{ width: `${levelPct}%` }} />
+            {/* Giant progress number */}
+            {mounted && (
+              <div className="shrink-0 text-right">
+                <div className="text-8xl font-black leading-none text-white md:text-9xl">
+                  {globalPct}<span className="text-4xl text-white/40">%</span>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Stats row */}
-          <div className="mt-5 grid grid-cols-3 gap-3">
-            {[
-              { icon: <Star className="h-4 w-4" />, label: "Points", value: `${earnedPts}/${totalPts}` },
-              { icon: <BookOpen className="h-4 w-4" />, label: "Ressources", value: `${completedCount}/${allIds.length}` },
-              { icon: <Award className="h-4 w-4" />, label: "Badges", value: `${unlockedCount}/${totalBadges}` },
-            ].map((s) => (
-              <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: "rgba(255,255,255,0.1)" }}>
-                <div className="flex justify-center mb-1 text-white/60">{s.icon}</div>
-                <div className="text-lg font-bold text-white">{s.value}</div>
-                <div className="text-xs text-white/50">{s.label}</div>
+                <p className="text-sm text-white/40">{completedCount}/{allIds.length} ressources</p>
+                <p className="text-sm font-bold text-white/60">{earnedPts} <span className="font-normal text-white/30">/ {totalPts} pts</span></p>
               </div>
-            ))}
+            )}
           </div>
 
-          {/* Global progress */}
-          <div className="mt-4">
-            <div className="mb-1.5 flex justify-between text-xs text-white/60">
-              <span>Progression globale</span>
-              <span className="font-semibold text-white">{globalPct}%</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.15)" }}>
-              <div className="h-full rounded-full bg-white transition-all duration-700"
-                style={{ width: `${mounted ? globalPct : 0}%` }} />
-            </div>
+          {/* Progress bar */}
+          <div className="mt-8 h-1.5 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.15)" }}>
+            <div className="h-full rounded-full bg-white transition-all duration-1000"
+              style={{ width: `${mounted ? globalPct : 0}%` }} />
           </div>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="mx-auto max-w-3xl space-y-5 px-6 py-8">
-        {role.parcours.map((p) => (
-          <ParcoursSection key={p.id} parcours={p} progress={progress}
-            onToggleArticle={handleToggle} accentColor={accentColor} />
+      {/* Parcours */}
+      <div className="mx-auto max-w-4xl space-y-12 px-8 py-12">
+        {role.parcours.map(p => (
+          <ParcoursBlock key={p.id} parcours={p} progress={progress} onToggle={handleToggle} accent={accent} />
         ))}
 
         {globalPct === 100 && (
-          <div className="rounded-3xl p-8 text-center text-white" style={{ background: headerGradient }}>
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: "rgba(255,255,255,0.2)" }}>
-              <Award className="h-8 w-8 text-white" />
-            </div>
-            <h3 className="mb-2 text-xl font-extrabold">Parcours complété !</h3>
-            <p className="text-white/80 text-sm">
-              Vous avez terminé tous les modules et gagné {totalPts} points.<br />
-              Vous méritez un outil à la hauteur de votre impact.
+          <div className="rounded-3xl p-10 text-center text-white" style={{ background: headerBg }}>
+            <Award className="mx-auto mb-4 h-12 w-12 text-white/80" />
+            <h3 className="text-3xl font-black">Parcours complété.</h3>
+            <p className="mt-2 text-white/60">
+              {totalPts} points gagnés. Vous méritez un outil à la hauteur de votre impact.
             </p>
           </div>
         )}
