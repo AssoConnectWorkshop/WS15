@@ -51,7 +51,7 @@ export default function LeadModal({ onClose, defaultRole }: Props) {
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: "#e6faf6" }}>
                 <Check className="h-8 w-8" style={{ color: "#00C49A" }} />
               </div>
-              <h3 className="mb-2 text-xl font-bold text-gray-900">C'est noté !</h3>
+              <h3 className="mb-2 text-xl font-bold text-gray-900">C&apos;est noté !</h3>
               <p className="text-gray-500 text-sm">Continuez votre parcours, vous avez du chemin à faire.</p>
             </div>
           ) : (
@@ -92,7 +92,7 @@ export default function LeadModal({ onClose, defaultRole }: Props) {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-700">Nom de l'association</label>
+                  <label className="mb-1 block text-xs font-medium text-gray-700">Nom de l&apos;association</label>
                   <input
                     required
                     value={form.associationName}

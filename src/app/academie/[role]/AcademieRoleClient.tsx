@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Check, Play, FileText, ExternalLink, Award, ChevronLeft, ChevronDown } from "lucide-react";
+import { Check, Play, ExternalLink, Award, ChevronLeft, ChevronDown } from "lucide-react";
 import {
   ACADEMY_CONTENT, getTotalPoints, getParcoursPoints, getAllArticleIds,
   type RoleConfig, type Parcours, type Mission, type Article,
@@ -273,7 +273,7 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
   const handleToggle = useCallback((id: string) => {
     setProgress(prev => {
       const next = { completedArticles: new Set(prev.completedArticles), unlockedBadges: new Set(prev.unlockedBadges) };
-      next.completedArticles.has(id) ? next.completedArticles.delete(id) : next.completedArticles.add(id);
+      if (next.completedArticles.has(id)) { next.completedArticles.delete(id); } else { next.completedArticles.add(id); }
       const checked = checkBadges(next);
       saveProgress(checked);
       if (!userEmail && !localStorage.getItem(LEAD_KEY) && checked.completedArticles.size >= LEAD_TRIGGER) {
