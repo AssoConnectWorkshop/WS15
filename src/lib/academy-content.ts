@@ -10,12 +10,21 @@ export type Article = {
   youtubeId?: string;
 };
 
+export type QuizQuestion = {
+  id: string;
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+};
+
 export type Mission = {
   id: string;
   title: string;
   description: string;
   points: number;
   articles: Article[];
+  quiz: QuizQuestion[];
 };
 
 export type Badge = {
@@ -103,6 +112,32 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 youtubeId: "vtmHKFgcebo",
               },
             ],
+            quiz: [
+              {
+                id: "q-loi1901",
+                question: "La loi 1901 régit principalement quel type d'organisation ?",
+                options: [
+                  "Les entreprises commerciales",
+                  "Les associations à but non lucratif",
+                  "Les collectivités locales",
+                  "Les syndicats professionnels",
+                ],
+                correctIndex: 1,
+                explanation: "La loi du 1er juillet 1901 est le texte fondateur des associations en France. Elle s'applique à toute association à but non lucratif réunissant des personnes autour d'un projet commun.",
+              },
+              {
+                id: "q-statuts-obligatoires",
+                question: "Parmi ces documents, lequel est indispensable pour déclarer une association en préfecture ?",
+                options: [
+                  "Le règlement intérieur",
+                  "Le procès-verbal de la première réunion",
+                  "Les statuts signés",
+                  "Un budget prévisionnel",
+                ],
+                correctIndex: 2,
+                explanation: "Les statuts sont le document fondateur obligatoire. Le règlement intérieur et le PV sont utiles mais pas exigés pour la déclaration initiale en préfecture.",
+              },
+            ],
           },
           {
             id: "mission-ag",
@@ -133,6 +168,32 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 description: "Modèle et conseils pour un PV valide et complet.",
                 type: "article",
                 duration: "5 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-ag-frequence",
+                question: "À quelle fréquence minimum une AGO doit-elle se tenir ?",
+                options: [
+                  "Tous les 2 ans",
+                  "Au moins une fois par an",
+                  "Tous les 6 mois",
+                  "Uniquement quand il y a une décision importante",
+                ],
+                correctIndex: 1,
+                explanation: "Sauf disposition contraire des statuts, l'assemblée générale ordinaire se réunit au moins une fois par an pour approuver les comptes et le rapport d'activité.",
+              },
+              {
+                id: "q-pv-ag-role",
+                question: "À quoi sert le procès-verbal d'une assemblée générale ?",
+                options: [
+                  "À remplacer les statuts si nécessaire",
+                  "À consigner officiellement les décisions prises lors de la réunion",
+                  "À informer la préfecture de chaque réunion",
+                  "À fixer les cotisations pour l'année suivante",
+                ],
+                correctIndex: 1,
+                explanation: "Le PV est la trace écrite officielle des délibérations et décisions prises en AG. Il a une valeur juridique et peut être exigé par des partenaires ou des financeurs.",
               },
             ],
           },
@@ -173,6 +234,32 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 duration: "5 min",
               },
             ],
+            quiz: [
+              {
+                id: "q-recrutement-canal",
+                question: "Quel canal est généralement le plus efficace pour recruter de nouveaux adhérents ?",
+                options: [
+                  "Les publicités en ligne payantes",
+                  "Le bouche-à-oreille et les recommandations",
+                  "Les affiches dans les commerces",
+                  "Les mails non sollicités",
+                ],
+                correctIndex: 1,
+                explanation: "Le bouche-à-oreille reste le levier le plus puissant pour les associations. Un membre satisfait qui parle de l'asso à son entourage convertit bien mieux que n'importe quelle publicité.",
+              },
+              {
+                id: "q-accueil-membre",
+                question: "Quelle est la première chose à faire quand un nouveau membre rejoint l'association ?",
+                options: [
+                  "Lui demander de payer sa cotisation immédiatement",
+                  "Le contacter personnellement pour le souhaiter la bienvenue",
+                  "Lui envoyer les statuts par email",
+                  "L'ajouter directement à tous les groupes WhatsApp",
+                ],
+                correctIndex: 1,
+                explanation: "Un contact personnel et chaleureux à l'arrivée est déterminant pour l'intégration d'un nouveau membre. Cela pose les bases d'une relation de confiance et réduit le risque de départ précoce.",
+              },
+            ],
           },
           {
             id: "mission-fideliser",
@@ -195,6 +282,32 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 description: "Les meilleures plateformes pour trouver des bénévoles qualifiés.",
                 type: "article",
                 duration: "9 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-fidelisation-raison",
+                question: "Quelle est la première cause de départ d'un bénévole ?",
+                options: [
+                  "Le manque de temps personnel",
+                  "Le manque de reconnaissance de son engagement",
+                  "Les conflits avec d'autres bénévoles",
+                  "La distance géographique",
+                ],
+                correctIndex: 1,
+                explanation: "Des études sur l'engagement bénévole montrent que le manque de reconnaissance est le premier frein à la fidélisation. Un simple merci, une mention dans le compte-rendu ou une réunion conviviale font une grande différence.",
+              },
+              {
+                id: "q-fidelisation-cle",
+                question: "Pour fidéliser un bénévole sur le long terme, la priorité est de...",
+                options: [
+                  "Lui confier des missions adaptées à ses compétences et envies",
+                  "L'inviter à toutes les réunions",
+                  "Lui proposer une compensation financière",
+                  "L'inscrire à des formations obligatoires",
+                ],
+                correctIndex: 0,
+                explanation: "L'adéquation mission-compétences est le facteur clé. Un bénévole qui fait quelque chose qui a du sens pour lui et où il se sent utile reste beaucoup plus longtemps.",
               },
             ],
           },
@@ -262,6 +375,32 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 youtubeId: "zGX8sAlngyQ",
               },
             ],
+            quiz: [
+              {
+                id: "q-bilan-composition",
+                question: "Le bilan comptable d'une association se compose de...",
+                options: [
+                  "Recettes et dépenses uniquement",
+                  "Un actif (ce que l'asso possède) et un passif (ce qu'elle doit)",
+                  "Un seul tableau de résultats annuels",
+                  "Les cotisations perçues et les subventions reçues",
+                ],
+                correctIndex: 1,
+                explanation: "Le bilan est une photographie du patrimoine à un instant T. L'actif recense les ressources (trésorerie, équipements...), le passif les engagements (dettes, réserves...). Les deux colonnes s'équilibrent toujours.",
+              },
+              {
+                id: "q-compta-obligation",
+                question: "Une association loi 1901 a-t-elle l'obligation légale de tenir une comptabilité ?",
+                options: [
+                  "Non, jamais",
+                  "Oui, toujours, quelle que soit sa taille",
+                  "Oui, dès qu'elle dépasse certains seuils ou reçoit des subventions publiques",
+                  "Uniquement si elle emploie des salariés",
+                ],
+                correctIndex: 2,
+                explanation: "La comptabilité devient obligatoire au-delà de certains seuils (ex : subvention publique supérieure à 153 000 €) ou pour les associations reconnues d'utilité publique. Mais même sans obligation, une comptabilité rigoureuse est fortement recommandée.",
+              },
+            ],
           },
           {
             id: "mission-budget",
@@ -284,6 +423,32 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 description: "Structure et présentation en assemblée générale.",
                 type: "article",
                 duration: "7 min",
+              },
+            ],
+            quiz: [
+              {
+                id: "q-budget-prev-moment",
+                question: "À quel moment doit-on établir le budget prévisionnel ?",
+                options: [
+                  "En fin d'exercice, une fois les comptes clôturés",
+                  "Avant le début de l'exercice, pour anticiper les recettes et dépenses",
+                  "Uniquement lors de l'assemblée générale",
+                  "Quand on cherche une subvention",
+                ],
+                correctIndex: 1,
+                explanation: "Le budget prévisionnel est un outil de pilotage : il se construit en amont pour fixer les objectifs financiers. Le comparer aux réalisations en cours d'année permet de détecter les écarts rapidement.",
+              },
+              {
+                id: "q-excedent",
+                question: "Qu'est-ce qu'un excédent dans les comptes d'une association ?",
+                options: [
+                  "Un profit distribuable aux membres",
+                  "Un solde positif quand les produits dépassent les charges",
+                  "Une réserve obligatoire imposée par la loi",
+                  "Un trop-perçu de cotisations à rembourser",
+                ],
+                correctIndex: 1,
+                explanation: "Contrairement aux entreprises, une association ne peut pas distribuer ses bénéfices. L'excédent (produits - charges > 0) est mis en réserve pour financer des projets futurs ou absorber de futurs déficits.",
               },
             ],
           },
@@ -332,6 +497,32 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 duration: "5 min",
               },
             ],
+            quiz: [
+              {
+                id: "q-cotis-avantage",
+                question: "Quel est le principal avantage du paiement des cotisations en ligne pour le trésorier ?",
+                options: [
+                  "Éviter d'avoir un compte bancaire associatif",
+                  "Automatiser le suivi des paiements et réduire les impayés",
+                  "Supprimer la nécessité d'un logiciel de comptabilité",
+                  "Permettre des cotisations en espèces",
+                ],
+                correctIndex: 1,
+                explanation: "Avec le paiement en ligne, chaque transaction est enregistrée automatiquement. Plus besoin de noter les chèques à la main ou de courir après les adhérents : les relances et le suivi sont intégrés.",
+              },
+              {
+                id: "q-relance-cotis",
+                question: "Avant d'envoyer une relance pour retard de cotisation, que faut-il vérifier en priorité ?",
+                options: [
+                  "Que la cotisation n'a pas été augmentée depuis l'an dernier",
+                  "Que le membre a bien reçu sa facture et les informations de paiement",
+                  "Que l'association a bien un compte Paypal",
+                  "Que le bureau a voté pour la relance",
+                ],
+                correctIndex: 1,
+                explanation: "Beaucoup d'impayés sont dus à une simple absence de réception de la facture ou à une confusion sur les modalités de paiement. Vérifier ce point avant de relancer évite des malentendus inutiles.",
+              },
+            ],
           },
           {
             id: "mission-subventions",
@@ -364,6 +555,32 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 duration: "10 min",
               },
             ],
+            quiz: [
+              {
+                id: "q-subvention-definition",
+                question: "Une subvention publique accordée à une association doit être...",
+                options: [
+                  "Remboursée avec des intérêts si l'association fait un excédent",
+                  "Utilisée conformément à l'objet pour lequel elle a été attribuée",
+                  "Déclarée comme revenu imposable",
+                  "Partagée à parts égales entre les membres du bureau",
+                ],
+                correctIndex: 1,
+                explanation: "Une subvention est une aide avec contrepartie d'usage : elle doit financer l'action ou le projet pour lequel elle a été demandée. Un détournement d'usage peut entraîner un remboursement voire des poursuites.",
+              },
+              {
+                id: "q-subvention-etape",
+                question: "Quelle est la première étape pour obtenir une subvention ?",
+                options: [
+                  "Rédiger un dossier très détaillé",
+                  "Identifier les financeurs potentiels adaptés au projet",
+                  "Déposer une demande auprès de tous les organismes possibles",
+                  "Obtenir d'abord le soutien d'un élu local",
+                ],
+                correctIndex: 1,
+                explanation: "Avant de rédiger quoi que ce soit, il faut cibler les bons financeurs : mairie, département, région, fondations privées... Chaque financeur a ses critères et ses calendriers. Un dossier bien ciblé a beaucoup plus de chances d'aboutir.",
+              },
+            ],
           },
         ],
       },
@@ -386,6 +603,13 @@ export function getAllArticleIds(role: RoleConfig): string[] {
     .flatMap((p) => p.missions)
     .flatMap((m) => m.articles)
     .map((a) => a.id);
+}
+
+export function getAllQuizIds(role: RoleConfig): string[] {
+  return role.parcours
+    .flatMap((p) => p.missions)
+    .flatMap((m) => m.quiz)
+    .map((q) => q.id);
 }
 
 // Keep backward compat aliases

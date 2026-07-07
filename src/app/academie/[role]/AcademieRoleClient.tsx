@@ -5,31 +5,40 @@ import Link from "next/link";
 import { Check, Play, ExternalLink, Award, ChevronLeft, ChevronDown } from "lucide-react";
 import {
   ACADEMY_CONTENT, getTotalPoints, getParcoursPoints, getAllArticleIds,
-  type RoleConfig, type Parcours, type Mission, type Article,
+  type RoleConfig, type Parcours, type Mission, type Article, type QuizQuestion,
 } from "@/lib/academy-content";
 import LeadModal from "./LeadModal";
 import SSOBar from "./SSOBar";
 
-type Progress = { completedArticles: Set<string>; unlockedBadges: Set<string> };
+type Progress = {
+  completedArticles: Set<string>;
+  unlockedBadges: Set<string>;
+  answeredQuiz: Map<string, number>; // questionId -> chosen index
+};
 
 const STORAGE_KEY = "academy-progress-v1";
 const LEAD_TRIGGER = 2;
 const LEAD_KEY = "academy-lead-captured";
 
 function loadProgress(): Progress {
-  if (typeof window === "undefined") return { completedArticles: new Set(), unlockedBadges: new Set() };
+  if (typeof window === "undefined") return { completedArticles: new Set(), unlockedBadges: new Set(), answeredQuiz: new Map() };
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { completedArticles: new Set(), unlockedBadges: new Set() };
+    if (!raw) return { completedArticles: new Set(), unlockedBadges: new Set(), answeredQuiz: new Map() };
     const d = JSON.parse(raw);
-    return { completedArticles: new Set(d.completedArticles ?? []), unlockedBadges: new Set(d.unlockedBadges ?? []) };
-  } catch { return { completedArticles: new Set(), unlockedBadges: new Set() }; }
+    return {
+      completedArticles: new Set(d.completedArticles ?? []),
+      unlockedBadges: new Set(d.unlockedBadges ?? []),
+      answeredQuiz: new Map(Object.entries(d.answeredQuiz ?? {})),
+    };
+  } catch { return { completedArticles: new Set(), unlockedBadges: new Set(), answeredQuiz: new Map() }; }
 }
 
 function saveProgress(p: Progress) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({
     completedArticles: [...p.completedArticles],
     unlockedBadges: [...p.unlockedBadges],
+    answeredQuiz: Object.fromEntries(p.answeredQuiz),
   }));
 }
 
@@ -79,7 +88,6 @@ function ArticleRow({ article, completed, onToggle, accent }: {
   return (
     <div className={`border-b border-gray-100 last:border-0 transition-colors ${completed ? "opacity-60" : ""}`}>
       <div className="flex items-center gap-4 py-4">
-        {/* Check button */}
         <button onClick={onToggle}
           className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all"
           style={completed
@@ -90,14 +98,12 @@ function ArticleRow({ article, completed, onToggle, accent }: {
           {completed && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
         </button>
 
-        {/* Type badge */}
         <span className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wide ${
           article.type === "video" ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-500"
         }`}>
           {article.type === "video" ? "Vidéo" : "Article"}
         </span>
 
-        {/* Title */}
         <div className="flex-1 min-w-0">
           {isVideo ? (
             <button onClick={() => setExpanded(e => !e)} className="text-left font-semibold text-gray-900 hover:underline">
@@ -113,7 +119,6 @@ function ArticleRow({ article, completed, onToggle, accent }: {
           <p className="text-sm text-gray-400 mt-0.5 truncate">{article.description}</p>
         </div>
 
-        {/* Duration + expand for video */}
         <div className="flex shrink-0 items-center gap-2">
           <span className="text-xs text-gray-400">{article.duration}</span>
           {isVideo && (
@@ -134,21 +139,151 @@ function ArticleRow({ article, completed, onToggle, accent }: {
   );
 }
 
-function MissionBlock({ mission, progress, onToggle, accent }: {
-  mission: Mission; progress: Progress; onToggle: (id: string) => void; accent: string;
+function QuizCard({ question, answered, onAnswer }: {
+  question: QuizQuestion;
+  answered: number | undefined;
+  onAnswer: (idx: number) => void;
+}) {
+  const isAnswered = answered !== undefined;
+  const isCorrect = isAnswered && answered === question.correctIndex;
+
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+      <p className="mb-4 font-semibold text-gray-900 text-sm">{question.question}</p>
+      <div className="space-y-2">
+        {question.options.map((opt, idx) => {
+          const style: React.CSSProperties = {};
+          let classes = "w-full rounded-xl border-2 px-4 py-3 text-left text-sm font-medium transition-all ";
+
+          if (!isAnswered) {
+            classes += "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-100 cursor-pointer";
+          } else if (idx === question.correctIndex) {
+            classes += "border-[#00C49A] bg-[#e6faf6] text-[#00a882] cursor-default";
+          } else if (idx === answered && answered !== question.correctIndex) {
+            classes += "border-red-300 bg-red-50 text-red-600 cursor-default";
+          } else {
+            classes += "border-gray-100 bg-white text-gray-400 cursor-default opacity-60";
+          }
+
+          return (
+            <button
+              key={idx}
+              className={classes}
+              style={style}
+              disabled={isAnswered}
+              onClick={() => onAnswer(idx)}
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-bold"
+                  style={isAnswered && idx === question.correctIndex
+                    ? { background: "#00C49A", borderColor: "#00C49A", color: "white" }
+                    : isAnswered && idx === answered
+                      ? { background: "#fee2e2", borderColor: "#fca5a5", color: "#dc2626" }
+                      : { borderColor: "#e5e7eb", color: "#9ca3af" }
+                  }
+                >
+                  {isAnswered && idx === question.correctIndex
+                    ? "✓"
+                    : isAnswered && idx === answered && answered !== question.correctIndex
+                      ? "✗"
+                      : String.fromCharCode(65 + idx)
+                  }
+                </span>
+                {opt}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {isAnswered && (
+        <div className={`mt-4 rounded-xl px-4 py-3 text-sm ${isCorrect ? "bg-[#e6faf6] text-[#00a882]" : "bg-blue-50 text-blue-700"}`}>
+          <p className="font-bold mb-1">{isCorrect ? "Bonne réponse !" : "Pas tout à fait..."}</p>
+          <p className="text-xs leading-relaxed">{question.explanation}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function QuizSection({ mission, progress, onAnswer, accent }: {
+  mission: Mission;
+  progress: Progress;
+  onAnswer: (questionId: string, idx: number) => void;
+  accent: string;
+}) {
+  const articlesComplete = mission.articles.every(a => progress.completedArticles.has(a.id));
+  const answeredCount = mission.quiz.filter(q => progress.answeredQuiz.has(q.id)).length;
+  const allAnswered = answeredCount === mission.quiz.length;
+  const correctCount = mission.quiz.filter(q => {
+    const ans = progress.answeredQuiz.get(q.id);
+    return ans !== undefined && ans === q.correctIndex;
+  }).length;
+
+  if (!articlesComplete) {
+    return (
+      <div className="rounded-2xl border-2 border-dashed border-gray-100 p-5 text-center">
+        <div className="mb-2 flex justify-center">
+          <svg className="h-8 w-8 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+        </div>
+        <p className="text-sm font-semibold text-gray-400">Quiz disponible après avoir lu toutes les ressources</p>
+        <p className="text-xs text-gray-300 mt-1">{mission.articles.length - mission.articles.filter(a => progress.completedArticles.has(a.id)).length} ressource(s) restante(s)</p>
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h5 className="font-black text-gray-900 text-sm">Quiz de validation</h5>
+          <p className="text-xs text-gray-400">{answeredCount}/{mission.quiz.length} question{mission.quiz.length > 1 ? "s" : ""} répondue{mission.quiz.length > 1 ? "s" : ""}</p>
+        </div>
+        {allAnswered && (
+          <span className="rounded-full px-3 py-1 text-xs font-bold"
+            style={{ background: "#e6faf6", color: "#00a882" }}>
+            {correctCount}/{mission.quiz.length} correcte{correctCount > 1 ? "s" : ""}
+          </span>
+        )}
+      </div>
+      <div className="space-y-4">
+        {mission.quiz.map(q => (
+          <QuizCard
+            key={q.id}
+            question={q}
+            answered={progress.answeredQuiz.get(q.id)}
+            onAnswer={(idx) => onAnswer(q.id, idx)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function MissionBlock({ mission, progress, onToggle, onQuizAnswer, accent }: {
+  mission: Mission;
+  progress: Progress;
+  onToggle: (id: string) => void;
+  onQuizAnswer: (questionId: string, idx: number) => void;
+  accent: string;
 }) {
   const done = mission.articles.filter(a => progress.completedArticles.has(a.id)).length;
   const total = mission.articles.length;
-  const isDone = done === total;
+  const quizAnswered = mission.quiz.filter(q => progress.answeredQuiz.has(q.id)).length;
+  const allArticlesDone = done === total;
+  const allQuizDone = quizAnswered === mission.quiz.length;
+  const isDone = allArticlesDone && allQuizDone;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   const [open, setOpen] = useState(false);
+  const [tab, setTab] = useState<"articles" | "quiz">("articles");
 
   return (
     <div className="overflow-hidden">
       <button onClick={() => setOpen(o => !o)}
         className="group flex w-full items-center gap-5 py-5 text-left transition-all hover:opacity-80"
       >
-        {/* Progress ring / number */}
         <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
           <svg className="absolute inset-0 -rotate-90" viewBox="0 0 48 48">
             <circle cx="24" cy="24" r="20" fill="none" stroke="#f0f0f0" strokeWidth="3" />
@@ -172,6 +307,11 @@ function MissionBlock({ mission, progress, onToggle, accent }: {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
+          {allArticlesDone && (
+            <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: "#e6faf6", color: "#00a882" }}>
+              Quiz {quizAnswered}/{mission.quiz.length}
+            </span>
+          )}
           {isDone && (
             <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: "#e6faf6", color: "#00a882" }}>
               +{mission.points} pts
@@ -185,22 +325,54 @@ function MissionBlock({ mission, progress, onToggle, accent }: {
       </button>
 
       {open && (
-        <div className="ml-17 pb-4 pl-[68px] pr-2">
-          {mission.articles.map(a => (
-            <ArticleRow key={a.id} article={a}
-              completed={progress.completedArticles.has(a.id)}
-              onToggle={() => onToggle(a.id)}
+        <div className="pb-6 pl-[68px] pr-2">
+          {/* Tabs */}
+          <div className="mb-4 flex gap-1 rounded-xl bg-gray-100 p-1">
+            <button
+              onClick={() => setTab("articles")}
+              className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${tab === "articles" ? "bg-white text-gray-900 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+            >
+              Ressources ({done}/{total})
+            </button>
+            <button
+              onClick={() => setTab("quiz")}
+              className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${tab === "quiz" ? "bg-white text-gray-900 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
+            >
+              Quiz ({quizAnswered}/{mission.quiz.length})
+              {allArticlesDone && !allQuizDone && (
+                <span className="ml-1.5 inline-flex h-1.5 w-1.5 rounded-full bg-[#3D5AF1]" />
+              )}
+            </button>
+          </div>
+
+          {tab === "articles" && (
+            <div className="rounded-2xl border border-gray-100 bg-white px-4">
+              {mission.articles.map(a => (
+                <ArticleRow key={a.id} article={a}
+                  completed={progress.completedArticles.has(a.id)}
+                  onToggle={() => onToggle(a.id)}
+                  accent={accent}
+                />
+              ))}
+            </div>
+          )}
+
+          {tab === "quiz" && (
+            <QuizSection
+              mission={mission}
+              progress={progress}
+              onAnswer={onQuizAnswer}
               accent={accent}
             />
-          ))}
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function ParcoursBlock({ parcours, progress, onToggle, accent }: {
-  parcours: Parcours; progress: Progress; onToggle: (id: string) => void; accent: string;
+function ParcoursBlock({ parcours, progress, onToggle, onQuizAnswer, accent }: {
+  parcours: Parcours; progress: Progress; onToggle: (id: string) => void; onQuizAnswer: (qId: string, idx: number) => void; accent: string;
 }) {
   const allIds = parcours.missions.flatMap(m => m.articles.map(a => a.id));
   const completedCount = allIds.filter(id => progress.completedArticles.has(id)).length;
@@ -213,13 +385,11 @@ function ParcoursBlock({ parcours, progress, onToggle, accent }: {
 
   return (
     <section>
-      {/* Parcours header */}
       <div className="mb-2 flex items-center justify-between">
         <div>
           <h3 className="text-xl font-black text-gray-900">{parcours.title}</h3>
           <p className="text-sm text-gray-400">{parcours.description}</p>
         </div>
-        {/* Badge */}
         <div className={`flex flex-col items-center gap-1 rounded-2xl p-3 text-center transition-all ${
           unlocked ? "bg-amber-50 ring-2 ring-amber-300" : "bg-gray-50 opacity-50"
         }`}>
@@ -228,7 +398,6 @@ function ParcoursBlock({ parcours, progress, onToggle, accent }: {
         </div>
       </div>
 
-      {/* Progress strip */}
       <div className="mb-4 flex items-center gap-3">
         <div className="flex-1 h-1 overflow-hidden rounded-full bg-gray-100">
           <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: accent }} />
@@ -237,10 +406,9 @@ function ParcoursBlock({ parcours, progress, onToggle, accent }: {
         <span className="text-xs text-gray-400">{earnedPts}/{totalPts} pts</span>
       </div>
 
-      {/* Missions */}
       <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white px-5">
         {parcours.missions.map(m => (
-          <MissionBlock key={m.id} mission={m} progress={progress} onToggle={onToggle} accent={accent} />
+          <MissionBlock key={m.id} mission={m} progress={progress} onToggle={onToggle} onQuizAnswer={onQuizAnswer} accent={accent} />
         ))}
       </div>
     </section>
@@ -249,7 +417,7 @@ function ParcoursBlock({ parcours, progress, onToggle, accent }: {
 
 export default function AcademieRoleClient({ roleId, userEmail }: { roleId: string; userEmail: string | null }) {
   const role = ACADEMY_CONTENT[roleId as keyof typeof ACADEMY_CONTENT] as RoleConfig | undefined;
-  const [progress, setProgress] = useState<Progress>({ completedArticles: new Set(), unlockedBadges: new Set() });
+  const [progress, setProgress] = useState<Progress>({ completedArticles: new Set(), unlockedBadges: new Set(), answeredQuiz: new Map() });
   const [mounted, setMounted] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [showLead, setShowLead] = useState(false);
@@ -272,7 +440,7 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
 
   const handleToggle = useCallback((id: string) => {
     setProgress(prev => {
-      const next = { completedArticles: new Set(prev.completedArticles), unlockedBadges: new Set(prev.unlockedBadges) };
+      const next = { completedArticles: new Set(prev.completedArticles), unlockedBadges: new Set(prev.unlockedBadges), answeredQuiz: new Map(prev.answeredQuiz) };
       if (next.completedArticles.has(id)) { next.completedArticles.delete(id); } else { next.completedArticles.add(id); }
       const checked = checkBadges(next);
       saveProgress(checked);
@@ -282,6 +450,20 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
       return checked;
     });
   }, [checkBadges, userEmail]);
+
+  const handleQuizAnswer = useCallback((questionId: string, idx: number) => {
+    setProgress(prev => {
+      if (prev.answeredQuiz.has(questionId)) return prev;
+      const next = {
+        completedArticles: new Set(prev.completedArticles),
+        unlockedBadges: new Set(prev.unlockedBadges),
+        answeredQuiz: new Map(prev.answeredQuiz),
+      };
+      next.answeredQuiz.set(questionId, idx);
+      saveProgress(next);
+      return next;
+    });
+  }, []);
 
   if (!role) return (
     <div className="flex min-h-screen items-center justify-center">
@@ -308,7 +490,6 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
 
       <SSOBar userEmail={userEmail} />
 
-      {/* Badge toast */}
       {toast && (
         <div className="fixed right-5 top-5 z-50 animate-pop-in flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-2xl ring-1 ring-amber-200">
           <Award className="h-6 w-6 text-amber-500" />
@@ -319,7 +500,7 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
         </div>
       )}
 
-      {/* Hero header — tall, bold */}
+      {/* Hero header */}
       <div style={{ background: headerBg }}>
         <div className="mx-auto max-w-4xl px-8 pb-12 pt-8">
           <Link href="/academie" className="mb-8 inline-flex items-center gap-1.5 text-sm font-medium text-white/50 hover:text-white transition-colors">
@@ -340,7 +521,6 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
               <p className="mt-4 text-white/60 max-w-md">{role.subtitle}</p>
             </div>
 
-            {/* Giant progress number */}
             {mounted && (
               <div className="shrink-0 text-right">
                 <div className="text-8xl font-black leading-none text-white md:text-9xl">
@@ -352,7 +532,6 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
             )}
           </div>
 
-          {/* Progress bar */}
           <div className="mt-8 h-1.5 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.15)" }}>
             <div className="h-full rounded-full bg-white transition-all duration-1000"
               style={{ width: `${mounted ? globalPct : 0}%` }} />
@@ -363,7 +542,7 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
       {/* Parcours */}
       <div className="mx-auto max-w-4xl space-y-12 px-8 py-12">
         {role.parcours.map(p => (
-          <ParcoursBlock key={p.id} parcours={p} progress={progress} onToggle={handleToggle} accent={accent} />
+          <ParcoursBlock key={p.id} parcours={p} progress={progress} onToggle={handleToggle} onQuizAnswer={handleQuizAnswer} accent={accent} />
         ))}
 
         {globalPct === 100 && (
