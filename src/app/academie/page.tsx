@@ -66,15 +66,20 @@ export default function AcademiePage() {
             <span className="relative inline-block">
               <span
                 key={wordIdx}
-                className="inline-block"
-                style={{
-                  animation: "fadeSlideIn 0.4s ease-out",
-                  color: "#ffffff",
-                  textDecoration: "line-through",
-                  textDecorationColor: "rgba(255,255,255,0.4)",
-                }}
+                className="inline-block relative"
+                style={{ animation: "fadeSlideIn 0.4s ease-out", color: "rgba(255,255,255,0.5)" }}
               >
                 {HERO_WORDS[wordIdx]}
+                <span
+                  className="absolute left-0 right-0"
+                  style={{
+                    top: "50%",
+                    height: "3px",
+                    background: "#00C49A",
+                    transform: "rotate(-3deg)",
+                    borderRadius: "2px",
+                  }}
+                />
               </span>
             </span>
             .
