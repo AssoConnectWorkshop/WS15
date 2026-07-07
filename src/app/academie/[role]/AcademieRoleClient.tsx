@@ -10,10 +10,26 @@ import {
 import LeadModal from "./LeadModal";
 import SSOBar from "./SSOBar";
 
+/* ── DS tokens ────────────────────────────────────────────── */
+const DS = {
+  primary: "#3D5AF1",
+  primaryHover: "#2d46d6",
+  turquoise: "#87DFD5",
+  textTitle: "#3C3C47",
+  textBody: "#56565D",
+  textMuted: "#73737C",
+  bgBlue: "#E6EDFD",
+  bgStrip: "#F9FBFF",
+  border: "#D0D0D7",
+  cardShadow: "0 10px 50px 0 rgba(61,90,241,0.18)",
+  success: "#00C49A",
+  successLight: "#e6faf6",
+};
+
 type Progress = {
   completedArticles: Set<string>;
   unlockedBadges: Set<string>;
-  answeredQuiz: Map<string, number>; // questionId -> chosen index
+  answeredQuiz: Map<string, number>;
 };
 
 const STORAGE_KEY = "academy-progress-v1";
@@ -42,14 +58,14 @@ function saveProgress(p: Progress) {
   }));
 }
 
-function RoleIcon({ icon, className }: { icon: RoleConfig["icon"]; className?: string }) {
+function RoleIcon({ icon, size = 28 }: { icon: RoleConfig["icon"]; size?: number }) {
   if (icon === "president") return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5a3 3 0 0 1 6 0v5M9 10h.01M15 10h.01M9 14h6" />
     </svg>
   );
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
       <rect x="2" y="5" width="20" height="14" rx="2" />
       <path d="M2 10h20M7 15h2M12 15h5" />
     </svg>
@@ -60,14 +76,14 @@ function YouTubeEmbed({ videoId, title }: { videoId: string; title: string }) {
   const [playing, setPlaying] = useState(false);
   const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
   if (playing) return (
-    <div className="relative mt-3 overflow-hidden rounded-2xl" style={{ paddingBottom: "56.25%" }}>
+    <div className="relative mt-3 overflow-hidden" style={{ paddingBottom: "56.25%", borderRadius: "12px" }}>
       <iframe className="absolute inset-0 h-full w-full" allowFullScreen
         src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`} title={title}
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" />
     </div>
   );
   return (
-    <button onClick={() => setPlaying(true)} className="group relative mt-3 block w-full overflow-hidden rounded-2xl">
+    <button onClick={() => setPlaying(true)} className="group relative mt-3 block w-full overflow-hidden" style={{ borderRadius: "12px" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={thumb} alt={title} className="w-full object-cover" style={{ aspectRatio: "16/9" }} />
       <div className="absolute inset-0 flex items-center justify-center bg-black/40 transition-all group-hover:bg-black/25">
@@ -79,52 +95,61 @@ function YouTubeEmbed({ videoId, title }: { videoId: string; title: string }) {
   );
 }
 
-function ArticleRow({ article, completed, onToggle, accent }: {
-  article: Article; completed: boolean; onToggle: () => void; accent: string;
+function ArticleRow({ article, completed, onToggle }: {
+  article: Article; completed: boolean; onToggle: () => void;
 }) {
   const isVideo = article.type === "video" && article.youtubeId;
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className={`border-b border-gray-100 last:border-0 transition-colors ${completed ? "opacity-60" : ""}`}>
+    <div style={{ borderBottom: `1px solid ${DS.border}`, opacity: completed ? 0.6 : 1 }} className="last:border-0">
       <div className="flex items-center gap-4 py-4">
-        <button onClick={onToggle}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all"
-          style={completed
-            ? { background: accent, borderColor: accent, color: "white" }
-            : { borderColor: "#e5e7eb" }
-          }
+        <button
+          onClick={onToggle}
+          className="flex shrink-0 items-center justify-center rounded-full border-2 transition-all"
+          style={{
+            width: "28px", height: "28px",
+            background: completed ? DS.primary : "transparent",
+            borderColor: completed ? DS.primary : DS.border,
+            color: "white",
+          }}
         >
-          {completed && <Check className="h-3.5 w-3.5" strokeWidth={3} />}
+          {completed && <Check size={13} strokeWidth={3} />}
         </button>
 
-        <span className={`shrink-0 rounded-md px-2 py-0.5 text-xs font-bold uppercase tracking-wide ${
-          article.type === "video" ? "bg-red-100 text-red-600" : "bg-gray-100 text-gray-500"
-        }`}>
+        <span
+          className="shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold uppercase tracking-wide"
+          style={{
+            background: article.type === "video" ? "#fee2e2" : DS.bgStrip,
+            color: article.type === "video" ? "#dc2626" : DS.textMuted,
+            borderRadius: "6px",
+          }}
+        >
           {article.type === "video" ? "Vidéo" : "Article"}
         </span>
 
         <div className="flex-1 min-w-0">
           {isVideo ? (
-            <button onClick={() => setExpanded(e => !e)} className="text-left font-semibold text-gray-900 hover:underline">
+            <button onClick={() => setExpanded(e => !e)} className="text-left font-semibold hover:underline"
+              style={{ color: DS.textTitle, fontFamily: "var(--font-heading, Poppins)", fontSize: "14px" }}>
               {article.title}
             </button>
           ) : (
             <a href={article.url} target="_blank" rel="noopener noreferrer"
-              className="group inline-flex items-center gap-1.5 font-semibold text-gray-900 hover:underline">
+              className="group inline-flex items-center gap-1.5 font-semibold hover:underline"
+              style={{ color: DS.textTitle, fontFamily: "var(--font-heading, Poppins)", fontSize: "14px" }}>
               {article.title}
-              <ExternalLink className="h-3 w-3 shrink-0 opacity-0 group-hover:opacity-40 transition-opacity" />
+              <ExternalLink size={12} className="shrink-0 opacity-0 group-hover:opacity-40 transition-opacity" />
             </a>
           )}
-          <p className="text-sm text-gray-400 mt-0.5 truncate">{article.description}</p>
+          <p className="mt-0.5 truncate text-sm" style={{ color: DS.textMuted }}>{article.description}</p>
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <span className="text-xs text-gray-400">{article.duration}</span>
+          <span className="text-xs" style={{ color: DS.textMuted }}>{article.duration}</span>
           {isVideo && (
-            <button onClick={() => setExpanded(e => !e)}
-              className="rounded-lg p-1 text-gray-400 transition-colors hover:bg-gray-100">
-              <ChevronDown className={`h-4 w-4 transition-transform ${expanded ? "rotate-180" : ""}`} />
+            <button onClick={() => setExpanded(e => !e)} className="rounded-lg p-1 transition-colors hover:bg-gray-100">
+              <ChevronDown size={16} style={{ color: DS.textMuted, transform: expanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
             </button>
           )}
         </div>
@@ -148,46 +173,39 @@ function QuizCard({ question, answered, onAnswer }: {
   const isCorrect = isAnswered && answered === question.correctIndex;
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
-      <p className="mb-4 font-semibold text-gray-900 text-sm">{question.question}</p>
+    <div style={{ background: DS.bgStrip, border: `1px solid ${DS.border}`, borderRadius: "12px", padding: "20px" }}>
+      <p className="mb-4 font-semibold text-sm" style={{ color: DS.textTitle, fontFamily: "var(--font-heading, Poppins)" }}>
+        {question.question}
+      </p>
       <div className="space-y-2">
         {question.options.map((opt, idx) => {
-          const style: React.CSSProperties = {};
-          let classes = "w-full rounded-xl border-2 px-4 py-3 text-left text-sm font-medium transition-all ";
-
-          if (!isAnswered) {
-            classes += "border-gray-200 bg-white text-gray-700 hover:border-gray-300 hover:bg-gray-100 cursor-pointer";
-          } else if (idx === question.correctIndex) {
-            classes += "border-[#00C49A] bg-[#e6faf6] text-[#00a882] cursor-default";
-          } else if (idx === answered && answered !== question.correctIndex) {
-            classes += "border-red-300 bg-red-50 text-red-600 cursor-default";
-          } else {
-            classes += "border-gray-100 bg-white text-gray-400 cursor-default opacity-60";
+          let bg = "#fff", border = DS.border, color = DS.textBody, cursor = "pointer";
+          if (isAnswered) {
+            cursor = "default";
+            if (idx === question.correctIndex) { bg = DS.successLight; border = DS.success; color = "#00a882"; }
+            else if (idx === answered) { bg = "#fef2f2"; border = "#fca5a5"; color = "#dc2626"; }
+            else { bg = "#fff"; border = DS.border; color = DS.textMuted; }
           }
 
           return (
-            <button
-              key={idx}
-              className={classes}
-              style={style}
-              disabled={isAnswered}
-              onClick={() => onAnswer(idx)}
+            <button key={idx} disabled={isAnswered} onClick={() => onAnswer(idx)}
+              className="w-full text-left transition-all"
+              style={{ background: bg, border: `1.5px solid ${border}`, borderRadius: "10px", padding: "12px 16px", color, cursor, fontSize: "14px" }}
+              onMouseEnter={e => { if (!isAnswered) { (e.currentTarget as HTMLButtonElement).style.borderColor = DS.primary; (e.currentTarget as HTMLButtonElement).style.background = DS.bgBlue; } }}
+              onMouseLeave={e => { if (!isAnswered) { (e.currentTarget as HTMLButtonElement).style.borderColor = DS.border; (e.currentTarget as HTMLButtonElement).style.background = "#fff"; } }}
             >
               <span className="flex items-center gap-3">
                 <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-xs font-bold"
                   style={isAnswered && idx === question.correctIndex
-                    ? { background: "#00C49A", borderColor: "#00C49A", color: "white" }
+                    ? { background: DS.success, borderColor: DS.success, color: "white" }
                     : isAnswered && idx === answered
                       ? { background: "#fee2e2", borderColor: "#fca5a5", color: "#dc2626" }
-                      : { borderColor: "#e5e7eb", color: "#9ca3af" }
+                      : { borderColor: DS.border, color: DS.textMuted }
                   }
                 >
-                  {isAnswered && idx === question.correctIndex
-                    ? "✓"
-                    : isAnswered && idx === answered && answered !== question.correctIndex
-                      ? "✗"
-                      : String.fromCharCode(65 + idx)
-                  }
+                  {isAnswered && idx === question.correctIndex ? "✓"
+                    : isAnswered && idx === answered && answered !== question.correctIndex ? "✗"
+                    : String.fromCharCode(65 + idx)}
                 </span>
                 {opt}
               </span>
@@ -197,20 +215,22 @@ function QuizCard({ question, answered, onAnswer }: {
       </div>
 
       {isAnswered && (
-        <div className={`mt-4 rounded-xl px-4 py-3 text-sm ${isCorrect ? "bg-[#e6faf6] text-[#00a882]" : "bg-blue-50 text-blue-700"}`}>
-          <p className="font-bold mb-1">{isCorrect ? "Bonne réponse !" : "Pas tout à fait..."}</p>
-          <p className="text-xs leading-relaxed">{question.explanation}</p>
+        <div
+          className="mt-4 rounded-xl px-4 py-3 text-sm"
+          style={{ background: isCorrect ? DS.successLight : DS.bgBlue, borderRadius: "10px" }}
+        >
+          <p className="font-bold mb-1" style={{ color: isCorrect ? "#00a882" : DS.primary, fontFamily: "var(--font-heading, Poppins)" }}>
+            {isCorrect ? "Bonne réponse !" : "Pas tout à fait..."}
+          </p>
+          <p style={{ color: DS.textBody, lineHeight: 1.6, fontWeight: 300 }}>{question.explanation}</p>
         </div>
       )}
     </div>
   );
 }
 
-function QuizSection({ mission, progress, onAnswer, accent }: {
-  mission: Mission;
-  progress: Progress;
-  onAnswer: (questionId: string, idx: number) => void;
-  accent: string;
+function QuizSection({ mission, progress, onAnswer }: {
+  mission: Mission; progress: Progress; onAnswer: (qId: string, idx: number) => void;
 }) {
   const articlesComplete = mission.articles.every(a => progress.completedArticles.has(a.id));
   const answeredCount = mission.quiz.filter(q => progress.answeredQuiz.has(q.id)).length;
@@ -222,14 +242,14 @@ function QuizSection({ mission, progress, onAnswer, accent }: {
 
   if (!articlesComplete) {
     return (
-      <div className="rounded-2xl border-2 border-dashed border-gray-100 p-5 text-center">
-        <div className="mb-2 flex justify-center">
-          <svg className="h-8 w-8 text-gray-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-          </svg>
-        </div>
-        <p className="text-sm font-semibold text-gray-400">Quiz disponible après avoir lu toutes les ressources</p>
-        <p className="text-xs text-gray-300 mt-1">{mission.articles.length - mission.articles.filter(a => progress.completedArticles.has(a.id)).length} ressource(s) restante(s)</p>
+      <div className="rounded-2xl text-center" style={{ border: `2px dashed ${DS.border}`, padding: "24px", borderRadius: "12px" }}>
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke={DS.border} strokeWidth="1.5" className="mx-auto mb-3">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        <p className="font-semibold text-sm" style={{ color: DS.textMuted }}>Quiz disponible après avoir lu toutes les ressources</p>
+        <p className="mt-1 text-xs" style={{ color: DS.border }}>
+          {mission.articles.length - mission.articles.filter(a => progress.completedArticles.has(a.id)).length} ressource(s) restante(s)
+        </p>
       </div>
     );
   }
@@ -238,21 +258,19 @@ function QuizSection({ mission, progress, onAnswer, accent }: {
     <div>
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h5 className="font-black text-gray-900 text-sm">Quiz de validation</h5>
-          <p className="text-xs text-gray-400">{answeredCount}/{mission.quiz.length} question{mission.quiz.length > 1 ? "s" : ""} répondue{mission.quiz.length > 1 ? "s" : ""}</p>
+          <h5 className="font-bold text-sm" style={{ fontFamily: "var(--font-heading, Poppins)", color: DS.textTitle }}>Quiz de validation</h5>
+          <p className="text-xs mt-0.5" style={{ color: DS.textMuted }}>{answeredCount}/{mission.quiz.length} question{mission.quiz.length > 1 ? "s" : ""} répondue{mission.quiz.length > 1 ? "s" : ""}</p>
         </div>
         {allAnswered && (
           <span className="rounded-full px-3 py-1 text-xs font-bold"
-            style={{ background: "#e6faf6", color: "#00a882" }}>
+            style={{ background: DS.successLight, color: "#00a882", borderRadius: "50px", fontFamily: "var(--font-heading, Poppins)" }}>
             {correctCount}/{mission.quiz.length} correcte{correctCount > 1 ? "s" : ""}
           </span>
         )}
       </div>
       <div className="space-y-4">
         {mission.quiz.map(q => (
-          <QuizCard
-            key={q.id}
-            question={q}
+          <QuizCard key={q.id} question={q}
             answered={progress.answeredQuiz.get(q.id)}
             onAnswer={(idx) => onAnswer(q.id, idx)}
           />
@@ -262,12 +280,10 @@ function QuizSection({ mission, progress, onAnswer, accent }: {
   );
 }
 
-function MissionBlock({ mission, progress, onToggle, onQuizAnswer, accent }: {
-  mission: Mission;
-  progress: Progress;
+function MissionBlock({ mission, progress, onToggle, onQuizAnswer }: {
+  mission: Mission; progress: Progress;
   onToggle: (id: string) => void;
-  onQuizAnswer: (questionId: string, idx: number) => void;
-  accent: string;
+  onQuizAnswer: (qId: string, idx: number) => void;
 }) {
   const done = mission.articles.filter(a => progress.completedArticles.has(a.id)).length;
   const total = mission.articles.length;
@@ -280,90 +296,93 @@ function MissionBlock({ mission, progress, onToggle, onQuizAnswer, accent }: {
   const [tab, setTab] = useState<"articles" | "quiz">("articles");
 
   return (
-    <div className="overflow-hidden">
-      <button onClick={() => setOpen(o => !o)}
-        className="group flex w-full items-center gap-5 py-5 text-left transition-all hover:opacity-80"
+    <div style={{ borderBottom: `1px solid ${DS.border}` }} className="last:border-0">
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="flex w-full items-center gap-5 py-5 text-left transition-opacity hover:opacity-75"
       >
-        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center">
-          <svg className="absolute inset-0 -rotate-90" viewBox="0 0 48 48">
-            <circle cx="24" cy="24" r="20" fill="none" stroke="#f0f0f0" strokeWidth="3" />
+        {/* Progress ring */}
+        <div className="relative flex shrink-0 items-center justify-center" style={{ width: 48, height: 48 }}>
+          <svg className="absolute inset-0" style={{ transform: "rotate(-90deg)" }} viewBox="0 0 48 48">
+            <circle cx="24" cy="24" r="20" fill="none" stroke={DS.bgBlue} strokeWidth="3" />
             <circle cx="24" cy="24" r="20" fill="none" strokeWidth="3"
-              stroke={isDone ? "#00C49A" : accent}
+              stroke={isDone ? DS.success : DS.primary}
               strokeDasharray={`${2 * Math.PI * 20}`}
               strokeDashoffset={`${2 * Math.PI * 20 * (1 - pct / 100)}`}
               strokeLinecap="round"
-              className="transition-all duration-700"
+              style={{ transition: "stroke-dashoffset 0.7s ease-out" }}
             />
           </svg>
           {isDone
-            ? <Check className="h-5 w-5" style={{ color: "#00C49A" }} strokeWidth={2.5} />
-            : <span className="text-sm font-black" style={{ color: accent }}>{pct}%</span>
+            ? <Check size={18} style={{ color: DS.success }} strokeWidth={2.5} />
+            : <span className="text-sm font-bold" style={{ color: DS.primary, fontFamily: "var(--font-heading, Poppins)" }}>{pct}%</span>
           }
         </div>
 
         <div className="flex-1 min-w-0">
-          <h4 className="font-bold text-gray-900">{mission.title}</h4>
-          <p className="text-sm text-gray-400">{mission.description}</p>
+          <h4 className="font-semibold" style={{ fontFamily: "var(--font-heading, Poppins)", color: DS.textTitle, fontSize: "15px" }}>
+            {mission.title}
+          </h4>
+          <p className="text-sm mt-0.5" style={{ color: DS.textMuted }}>{mission.description}</p>
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          {allArticlesDone && (
-            <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: "#e6faf6", color: "#00a882" }}>
+          {allArticlesDone && !allQuizDone && (
+            <span className="rounded-full px-2.5 py-1 text-xs font-bold"
+              style={{ background: DS.bgBlue, color: DS.primary, borderRadius: "50px", fontFamily: "var(--font-heading, Poppins)" }}>
               Quiz {quizAnswered}/{mission.quiz.length}
             </span>
           )}
-          {isDone && (
-            <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: "#e6faf6", color: "#00a882" }}>
+          {isDone ? (
+            <span className="rounded-full px-2.5 py-1 text-xs font-bold"
+              style={{ background: DS.successLight, color: "#00a882", borderRadius: "50px", fontFamily: "var(--font-heading, Poppins)" }}>
               +{mission.points} pts
             </span>
+          ) : (
+            <span className="text-xs" style={{ color: DS.textMuted }}>{mission.points} pts</span>
           )}
-          {!isDone && (
-            <span className="text-xs font-medium text-gray-400">{mission.points} pts</span>
-          )}
-          <ChevronDown className={`h-4 w-4 text-gray-400 transition-transform ${open ? "rotate-180" : ""}`} />
+          <ChevronDown size={16} style={{ color: DS.textMuted, transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
         </div>
       </button>
 
       {open && (
-        <div className="pb-6 pl-[68px] pr-2">
+        <div style={{ paddingLeft: "68px", paddingRight: "8px", paddingBottom: "24px" }}>
           {/* Tabs */}
-          <div className="mb-4 flex gap-1 rounded-xl bg-gray-100 p-1">
-            <button
-              onClick={() => setTab("articles")}
-              className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${tab === "articles" ? "bg-white text-gray-900 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
-            >
-              Ressources ({done}/{total})
-            </button>
-            <button
-              onClick={() => setTab("quiz")}
-              className={`flex-1 rounded-lg py-2 text-xs font-bold transition-all ${tab === "quiz" ? "bg-white text-gray-900 shadow-sm" : "text-gray-400 hover:text-gray-600"}`}
-            >
-              Quiz ({quizAnswered}/{mission.quiz.length})
-              {allArticlesDone && !allQuizDone && (
-                <span className="ml-1.5 inline-flex h-1.5 w-1.5 rounded-full bg-[#3D5AF1]" />
-              )}
-            </button>
+          <div className="mb-4 flex gap-1 rounded-xl p-1" style={{ background: DS.bgStrip, borderRadius: "12px" }}>
+            {(["articles", "quiz"] as const).map(t => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className="flex-1 rounded-lg py-2 text-xs font-semibold transition-all"
+                style={{
+                  background: tab === t ? "#fff" : "transparent",
+                  color: tab === t ? DS.textTitle : DS.textMuted,
+                  boxShadow: tab === t ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                  borderRadius: "8px",
+                  fontFamily: "var(--font-heading, Poppins)",
+                }}
+              >
+                {t === "articles" ? `Ressources (${done}/${total})` : `Quiz (${quizAnswered}/${mission.quiz.length})`}
+                {t === "quiz" && allArticlesDone && !allQuizDone && (
+                  <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full" style={{ background: DS.primary }} />
+                )}
+              </button>
+            ))}
           </div>
 
           {tab === "articles" && (
-            <div className="rounded-2xl border border-gray-100 bg-white px-4">
+            <div style={{ border: `1px solid ${DS.border}`, borderRadius: "12px", background: "#fff", padding: "0 16px" }}>
               {mission.articles.map(a => (
                 <ArticleRow key={a.id} article={a}
                   completed={progress.completedArticles.has(a.id)}
                   onToggle={() => onToggle(a.id)}
-                  accent={accent}
                 />
               ))}
             </div>
           )}
 
           {tab === "quiz" && (
-            <QuizSection
-              mission={mission}
-              progress={progress}
-              onAnswer={onQuizAnswer}
-              accent={accent}
-            />
+            <QuizSection mission={mission} progress={progress} onAnswer={onQuizAnswer} />
           )}
         </div>
       )}
@@ -371,8 +390,10 @@ function MissionBlock({ mission, progress, onToggle, onQuizAnswer, accent }: {
   );
 }
 
-function ParcoursBlock({ parcours, progress, onToggle, onQuizAnswer, accent }: {
-  parcours: Parcours; progress: Progress; onToggle: (id: string) => void; onQuizAnswer: (qId: string, idx: number) => void; accent: string;
+function ParcoursBlock({ parcours, progress, onToggle, onQuizAnswer }: {
+  parcours: Parcours; progress: Progress;
+  onToggle: (id: string) => void;
+  onQuizAnswer: (qId: string, idx: number) => void;
 }) {
   const allIds = parcours.missions.flatMap(m => m.articles.map(a => a.id));
   const completedCount = allIds.filter(id => progress.completedArticles.has(id)).length;
@@ -385,30 +406,45 @@ function ParcoursBlock({ parcours, progress, onToggle, onQuizAnswer, accent }: {
 
   return (
     <section>
-      <div className="mb-2 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-black text-gray-900">{parcours.title}</h3>
-          <p className="text-sm text-gray-400">{parcours.description}</p>
+          <h3 className="font-bold" style={{ fontFamily: "var(--font-heading, Poppins)", fontSize: "20px", color: DS.textTitle, letterSpacing: "0.3px" }}>
+            {parcours.title}
+          </h3>
+          <p className="text-sm mt-0.5" style={{ color: DS.textMuted }}>{parcours.description}</p>
         </div>
-        <div className={`flex flex-col items-center gap-1 rounded-2xl p-3 text-center transition-all ${
-          unlocked ? "bg-amber-50 ring-2 ring-amber-300" : "bg-gray-50 opacity-50"
-        }`}>
-          <Award className={`h-6 w-6 ${unlocked ? "text-amber-500" : "text-gray-300"}`} />
-          <span className="max-w-[70px] text-xs font-semibold leading-tight text-gray-700">{parcours.badge.name}</span>
+        {/* Badge */}
+        <div
+          className="flex flex-col items-center gap-1 text-center transition-all"
+          style={{
+            padding: "12px",
+            borderRadius: "16px",
+            background: unlocked ? "#fff8e6" : DS.bgStrip,
+            border: `2px solid ${unlocked ? "#f59e0b" : DS.border}`,
+            minWidth: "80px",
+            opacity: unlocked ? 1 : 0.5,
+          }}
+        >
+          <Award size={22} style={{ color: unlocked ? "#f59e0b" : DS.border }} />
+          <span className="text-xs font-semibold leading-tight mt-1" style={{ color: DS.textTitle, maxWidth: "72px" }}>
+            {parcours.badge.name}
+          </span>
         </div>
       </div>
 
+      {/* Progress strip */}
       <div className="mb-4 flex items-center gap-3">
-        <div className="flex-1 h-1 overflow-hidden rounded-full bg-gray-100">
-          <div className="h-full rounded-full transition-all duration-700" style={{ width: `${pct}%`, background: accent }} />
+        <div className="flex-1 overflow-hidden rounded-full" style={{ height: "4px", background: DS.bgBlue }}>
+          <div className="h-full rounded-full" style={{ width: `${pct}%`, background: DS.primary, transition: "width 0.7s ease-out" }} />
         </div>
-        <span className="text-xs font-bold tabular-nums" style={{ color: accent }}>{completedCount}/{allIds.length}</span>
-        <span className="text-xs text-gray-400">{earnedPts}/{totalPts} pts</span>
+        <span className="text-xs font-bold tabular-nums" style={{ color: DS.primary, fontFamily: "var(--font-heading, Poppins)" }}>{completedCount}/{allIds.length}</span>
+        <span className="text-xs" style={{ color: DS.textMuted }}>{earnedPts}/{totalPts} pts</span>
       </div>
 
-      <div className="divide-y divide-gray-100 rounded-2xl border border-gray-100 bg-white px-5">
+      {/* Missions */}
+      <div style={{ border: `1px solid ${DS.border}`, borderRadius: "16px", background: "#fff", padding: "0 20px" }}>
         {parcours.missions.map(m => (
-          <MissionBlock key={m.id} mission={m} progress={progress} onToggle={onToggle} onQuizAnswer={onQuizAnswer} accent={accent} />
+          <MissionBlock key={m.id} mission={m} progress={progress} onToggle={onToggle} onQuizAnswer={onQuizAnswer} />
         ))}
       </div>
     </section>
@@ -432,7 +468,7 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
       if (allDone && !u.unlockedBadges.has(parcours.badge.id)) {
         u.unlockedBadges.add(parcours.badge.id);
         setToast(parcours.badge.name);
-        setTimeout(() => setToast(null), 4000);
+        setTimeout(() => setToast(null), 4500);
       }
     }
     return u;
@@ -454,11 +490,7 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
   const handleQuizAnswer = useCallback((questionId: string, idx: number) => {
     setProgress(prev => {
       if (prev.answeredQuiz.has(questionId)) return prev;
-      const next = {
-        completedArticles: new Set(prev.completedArticles),
-        unlockedBadges: new Set(prev.unlockedBadges),
-        answeredQuiz: new Map(prev.answeredQuiz),
-      };
+      const next = { completedArticles: new Set(prev.completedArticles), unlockedBadges: new Set(prev.unlockedBadges), answeredQuiz: new Map(prev.answeredQuiz) };
       next.answeredQuiz.set(questionId, idx);
       saveProgress(next);
       return next;
@@ -467,15 +499,11 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
 
   if (!role) return (
     <div className="flex min-h-screen items-center justify-center">
-      <Link href="/academie" className="underline" style={{ color: "#3D5AF1" }}>← Retour</Link>
+      <Link href="/academie" style={{ color: DS.primary, textDecoration: "underline" }}>← Retour</Link>
     </div>
   );
 
-  const accent = role.color === "blue" ? "#3D5AF1" : "#00C49A";
-  const headerBg = role.color === "blue"
-    ? "linear-gradient(160deg, #3D5AF1 0%, #1a2456 100%)"
-    : "linear-gradient(160deg, #00C49A 0%, #005c48 100%)";
-
+  const headerBg = `linear-gradient(155deg, ${DS.primary} 0%, #1a2456 100%)`;
   const totalPts = getTotalPoints(role);
   const allIds = getAllArticleIds(role);
   const earnedPts = role.parcours.flatMap(p => p.missions)
@@ -485,73 +513,103 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
   const globalPct = allIds.length > 0 ? Math.round((completedCount / allIds.length) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-[#fafafa]">
+    <div style={{ background: "#FAFAFA", minHeight: "100vh", fontFamily: "var(--font-body, Roboto, sans-serif)", color: DS.textBody }}>
       {showLead && <LeadModal defaultRole={roleId} onClose={() => { setShowLead(false); localStorage.setItem(LEAD_KEY, "1"); }} />}
 
       <SSOBar userEmail={userEmail} />
 
+      {/* Badge toast */}
       {toast && (
-        <div className="fixed right-5 top-5 z-50 animate-pop-in flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-2xl ring-1 ring-amber-200">
-          <Award className="h-6 w-6 text-amber-500" />
+        <div className="fixed right-5 top-5 z-50 flex items-center gap-3 rounded-2xl bg-white px-5 py-4 shadow-2xl animate-pop-in"
+          style={{ border: "1px solid #fde68a", borderRadius: "16px" }}>
+          <Award size={22} style={{ color: "#f59e0b" }} />
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-amber-600">Badge débloqué</p>
-            <p className="font-bold text-gray-900">{toast}</p>
+            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: "#f59e0b" }}>Badge débloqué</p>
+            <p className="font-bold text-sm" style={{ fontFamily: "var(--font-heading, Poppins)", color: DS.textTitle }}>{toast}</p>
           </div>
         </div>
       )}
 
       {/* Hero header */}
       <div style={{ background: headerBg }}>
-        <div className="mx-auto max-w-4xl px-8 pb-12 pt-8">
-          <Link href="/academie" className="mb-8 inline-flex items-center gap-1.5 text-sm font-medium text-white/50 hover:text-white transition-colors">
-            <ChevronLeft className="h-4 w-4" /> Retour
+        <div className="mx-auto" style={{ maxWidth: "1280px", padding: "32px 4% 48px" }}>
+          <Link href="/academie"
+            className="inline-flex items-center gap-1.5 mb-8 text-sm font-medium transition-colors hover:opacity-80"
+            style={{ color: "rgba(255,255,255,0.5)" }}
+          >
+            <ChevronLeft size={16} /> Retour
           </Link>
 
           <div className="flex items-end justify-between gap-8">
             <div>
-              <RoleIcon icon={role.icon} className="mb-6 h-10 w-10 text-white/50" />
-              <h1 className="text-5xl font-black leading-none text-white md:text-7xl">
+              <div className="mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                <RoleIcon icon={role.icon} size={36} />
+              </div>
+              <h1 style={{
+                fontFamily: "var(--font-heading, Poppins)",
+                fontWeight: 700,
+                fontSize: "clamp(36px, 5vw, 60px)",
+                color: "white",
+                letterSpacing: "0.5px",
+                lineHeight: 1.05,
+              }}>
                 {role.title.split(" ou ").map((part, i) => (
                   <span key={i}>
-                    {i > 0 && <span className="block text-white/40 text-3xl md:text-4xl font-light">ou</span>}
+                    {i > 0 && <span style={{ display: "block", color: "rgba(255,255,255,0.35)", fontSize: "0.5em", fontWeight: 300, margin: "4px 0" }}>ou</span>}
                     {part}
                   </span>
                 ))}
               </h1>
-              <p className="mt-4 text-white/60 max-w-md">{role.subtitle}</p>
+              <p className="mt-4" style={{ color: "rgba(255,255,255,0.55)", maxWidth: "42ch", fontWeight: 300 }}>{role.subtitle}</p>
             </div>
 
             {mounted && (
               <div className="shrink-0 text-right">
-                <div className="text-8xl font-black leading-none text-white md:text-9xl">
-                  {globalPct}<span className="text-4xl text-white/40">%</span>
+                <div style={{
+                  fontFamily: "var(--font-heading, Poppins)",
+                  fontWeight: 700,
+                  fontSize: "clamp(64px, 8vw, 96px)",
+                  color: "white",
+                  lineHeight: 1,
+                }}>
+                  {globalPct}<span style={{ fontSize: "0.45em", color: "rgba(255,255,255,0.35)", fontWeight: 400 }}>%</span>
                 </div>
-                <p className="text-sm text-white/40">{completedCount}/{allIds.length} ressources</p>
-                <p className="text-sm font-bold text-white/60">{earnedPts} <span className="font-normal text-white/30">/ {totalPts} pts</span></p>
+                <p className="mt-1 text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>{completedCount}/{allIds.length} ressources</p>
+                <p className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.55)" }}>
+                  {earnedPts} <span style={{ fontWeight: 300, color: "rgba(255,255,255,0.3)" }}>/ {totalPts} pts</span>
+                </p>
               </div>
             )}
           </div>
 
-          <div className="mt-8 h-1.5 overflow-hidden rounded-full" style={{ background: "rgba(255,255,255,0.15)" }}>
-            <div className="h-full rounded-full bg-white transition-all duration-1000"
-              style={{ width: `${mounted ? globalPct : 0}%` }} />
+          <div className="mt-8 overflow-hidden rounded-full" style={{ height: "3px", background: "rgba(255,255,255,0.12)" }}>
+            <div className="h-full rounded-full bg-white" style={{ width: `${mounted ? globalPct : 0}%`, transition: "width 1s ease-out" }} />
           </div>
         </div>
       </div>
 
       {/* Parcours */}
-      <div className="mx-auto max-w-4xl space-y-12 px-8 py-12">
+      <div className="mx-auto space-y-12" style={{ maxWidth: "1280px", padding: "48px 4%" }}>
         {role.parcours.map(p => (
-          <ParcoursBlock key={p.id} parcours={p} progress={progress} onToggle={handleToggle} onQuizAnswer={handleQuizAnswer} accent={accent} />
+          <ParcoursBlock key={p.id} parcours={p} progress={progress} onToggle={handleToggle} onQuizAnswer={handleQuizAnswer} />
         ))}
 
         {globalPct === 100 && (
-          <div className="rounded-3xl p-10 text-center text-white" style={{ background: headerBg }}>
-            <Award className="mx-auto mb-4 h-12 w-12 text-white/80" />
-            <h3 className="text-3xl font-black">Parcours complété.</h3>
-            <p className="mt-2 text-white/60">
-              {totalPts} points gagnés. Vous méritez un outil à la hauteur de votre impact.
+          <div className="rounded-3xl p-10 text-center text-white" style={{ background: headerBg, borderRadius: "20px" }}>
+            <Award size={48} className="mx-auto mb-4" style={{ opacity: 0.8 }} />
+            <h3 style={{ fontFamily: "var(--font-heading, Poppins)", fontWeight: 700, fontSize: "28px" }}>Parcours complété.</h3>
+            <p className="mt-2" style={{ color: "rgba(255,255,255,0.55)", fontWeight: 300 }}>
+              {totalPts} points gagnés. Tu mérites un outil à la hauteur de ton engagement.
             </p>
+            <a
+              href="https://www.assoconnect.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center gap-2 font-semibold transition-all"
+              style={{ background: "#F6C131", color: DS.textTitle, borderRadius: "50px", padding: "13px 28px", fontSize: "15px" }}
+            >
+              Découvrir AssoConnect →
+            </a>
           </div>
         )}
       </div>
