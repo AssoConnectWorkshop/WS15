@@ -103,13 +103,13 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 duration: "7 min",
               },
               {
-                id: "vid-assoconnect-intro",
-                title: "AssoConnect : le logiciel de gestion pour associations",
-                url: "https://www.youtube.com/watch?v=vtmHKFgcebo",
-                description: "Découvrez comment AssoConnect simplifie la gestion de votre association.",
+                id: "vid-astuces-gestion",
+                title: "Webinaire : les astuces pour bien gérer son association",
+                url: "https://www.youtube.com/watch?v=wU_i1WtXsQc",
+                description: "Un webinaire complet avec les bonnes pratiques de gestion associative au quotidien.",
                 type: "video",
-                duration: "2 min",
-                youtubeId: "vtmHKFgcebo",
+                duration: "45 min",
+                youtubeId: "wU_i1WtXsQc",
               },
             ],
             quiz: [
@@ -233,6 +233,15 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 type: "article",
                 duration: "5 min",
               },
+              {
+                id: "vid-adhesions",
+                title: "Tuto : gérer facilement ses adhésions et adhérents",
+                url: "https://www.youtube.com/watch?v=4A7IZatOV_Q",
+                description: "Comment organiser sa campagne d'adhésion et gagner du temps sur le suivi des membres.",
+                type: "video",
+                duration: "4 min",
+                youtubeId: "4A7IZatOV_Q",
+              },
             ],
             quiz: [
               {
@@ -282,6 +291,15 @@ export const ACADEMY_CONTENT: Record<Role, RoleConfig> = {
                 description: "Les meilleures plateformes pour trouver des bénévoles qualifiés.",
                 type: "article",
                 duration: "9 min",
+              },
+              {
+                id: "vid-communication",
+                title: "Tuto : communiquer efficacement avec ses membres",
+                url: "https://www.youtube.com/watch?v=ldNMZLB7QXw",
+                description: "Emails ciblés, site web, espace membre : les canaux pour garder le lien avec ta communauté.",
+                type: "video",
+                duration: "3 min",
+                youtubeId: "ldNMZLB7QXw",
               },
             ],
             quiz: [
