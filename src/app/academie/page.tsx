@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ACADEMY_CONTENT, getTotalPoints, type RoleConfig } from "@/lib/academy-content";
 
 /* ── DS tokens (Poplico / AssoConnect) ─────────────────────────────
@@ -28,41 +28,15 @@ const DS = {
   cardShadow: "0 10px 50px 0 rgba(61,90,241,0.18)",
 };
 
-const HERO_WORDS = ["compliquée", "chronophage", "intimidante", "solitaire"];
+const HERO_WORDS = ["compliqué", "chronophage", "intimidant", "solitaire"];
 
-function useCountUp(target: number, duration = 1800) {
-  const [val, setVal] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(([e]) => {
-      if (!e.isIntersecting) return;
-      observer.disconnect();
-      const start = performance.now();
-      const tick = (now: number) => {
-        const p = Math.min((now - start) / duration, 1);
-        const ease = 1 - Math.pow(1 - p, 3);
-        setVal(Math.round(ease * target));
-        if (p < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
-    }, { threshold: 0.3 });
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [target, duration]);
-  return { val, ref };
-}
-
-function StatCount({ value, label }: { value: number; label: string }) {
-  const { val, ref } = useCountUp(value);
+function GradCap({ size = 28, color = "currentColor" }: { size?: number; color?: string }) {
   return (
-    <div className="text-center">
-      <span ref={ref} className="block text-4xl font-bold" style={{ fontFamily: "var(--font-heading, Poppins)", color: DS.primary }}>
-        {val.toLocaleString("fr-FR")}
-      </span>
-      <span className="mt-1 block text-sm" style={{ color: DS.textMuted }}>{label}</span>
-    </div>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 9L12 4 2 9l10 5 10-5z" />
+      <path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5" />
+      <path d="M22 9v5" />
+    </svg>
   );
 }
 
@@ -99,16 +73,16 @@ export default function AcademiePage() {
         <div className="mx-auto flex h-16 max-w-[1280px] items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div
-              className="flex h-7 w-7 items-center justify-center rounded-lg text-xs font-bold text-white"
-              style={{ background: DS.primary, fontFamily: "var(--font-heading, Poppins)" }}
+              className="flex h-8 w-8 items-center justify-center rounded-lg text-white"
+              style={{ background: DS.primary }}
             >
-              AC
+              <GradCap size={18} color="white" />
             </div>
             <span
               className="font-semibold text-sm"
               style={{ fontFamily: "var(--font-heading, Poppins)", color: scrolled ? DS.textTitle : "white", letterSpacing: "0.3px" }}
             >
-              AssoConnect Académie
+              AssoConnect <span style={{ fontWeight: 400, opacity: 0.75 }}>|</span> Académie
             </span>
           </div>
           <span
@@ -141,13 +115,16 @@ export default function AcademiePage() {
 
         <div className="relative mx-auto w-full max-w-[1280px]">
           <div className="max-w-2xl">
-            {/* Eyebrow */}
-            <p
-              className="mb-5 text-xs font-semibold uppercase tracking-widest"
-              style={{ color: "rgba(255,255,255,0.55)", letterSpacing: "0.08em" }}
+            {/* Academy badge */}
+            <div
+              className="mb-6 inline-flex items-center gap-2.5 rounded-full px-5 py-2.5"
+              style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.2)" }}
             >
-              Formation gratuite · Associations loi 1901
-            </p>
+              <GradCap size={20} color={DS.turquoise} />
+              <span className="text-sm font-semibold text-white" style={{ fontFamily: "var(--font-heading, Poppins)", letterSpacing: "0.5px" }}>
+                L&apos;Académie des dirigeants d&apos;asso
+              </span>
+            </div>
 
             {/* Headline */}
             <h1
@@ -157,11 +134,12 @@ export default function AcademiePage() {
                 fontSize: "clamp(36px, 5vw, 58px)",
                 fontWeight: 700,
                 letterSpacing: "0.5px",
-                lineHeight: 1.1,
+                lineHeight: 1.12,
               }}
             >
-              La gestion d&apos;asso,{" "}
+              Apprends à gérer ton asso.
               <br />
+              Sans que ce soit{" "}
               <span className="relative inline-block" style={{ color: "rgba(255,255,255,0.45)" }}>
                 <span
                   key={wordIdx}
@@ -181,15 +159,15 @@ export default function AcademiePage() {
                   }}
                 />
               </span>
-              . ✨
+              . 🎓
             </h1>
 
             <p
               className="mb-8 text-lg leading-relaxed"
               style={{ color: "rgba(255,255,255,0.65)", maxWidth: "48ch", fontWeight: 300 }}
             >
-              Des parcours guidés, des quiz pour valider tes acquis, et des badges pour marquer ta progression —
-              spécialement conçus pour les présidents et trésoriers d&apos;associations.
+              Une vraie formation en ligne, gratuite : des programmes par rôle, des missions à compléter,
+              des quiz pour valider tes acquis — et des badges qui prouvent ce que tu sais faire.
             </p>
 
             {/* CTAs */}
@@ -224,7 +202,7 @@ export default function AcademiePage() {
                 onMouseEnter={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.7)"; e.currentTarget.style.background = "rgba(255,255,255,0.08)"; }}
                 onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(255,255,255,0.35)"; e.currentTarget.style.background = "transparent"; }}
               >
-                Voir les parcours
+                Découvrir les programmes
               </a>
             </div>
           </div>
@@ -236,9 +214,9 @@ export default function AcademiePage() {
           >
             {[
               { value: "40000", label: "associations utilisent AssoConnect", raw: 40000 },
-              { value: "4", label: "parcours de formation", raw: 4 },
-              { value: "16", label: "questions de quiz", raw: 16 },
-              { value: "8", label: "badges à débloquer", raw: 8 },
+              { value: "2", label: "filières : président, trésorier", raw: 2 },
+              { value: "8", label: "missions avec quiz de validation", raw: 8 },
+              { value: "4", label: "badges à décrocher", raw: 4 },
             ].map(s => (
               <div key={s.label}>
                 <span
@@ -263,7 +241,7 @@ export default function AcademiePage() {
               className="mb-3 text-xs font-semibold uppercase tracking-widest"
               style={{ color: DS.primary, letterSpacing: "0.08em" }}
             >
-              Pourquoi l&apos;Académie
+              Comment ça marche
             </p>
             <h2
               className="mb-3 leading-tight"
@@ -275,10 +253,10 @@ export default function AcademiePage() {
                 letterSpacing: "0.5px",
               }}
             >
-              Tout ce qu&apos;il faut pour bien diriger ton asso
+              Une vraie école, sans les mauvais souvenirs
             </h2>
             <p style={{ color: DS.textBody, fontSize: "17px", fontWeight: 300, lineHeight: 1.6 }}>
-              Des ressources concrètes, une progression visible, et la satisfaction de monter en compétence — sans y passer des heures.
+              Un programme structuré, des quiz pour valider chaque étape, des badges qui prouvent tes compétences. À ton rythme, sans notes ni pression.
             </p>
           </div>
 
@@ -291,9 +269,9 @@ export default function AcademiePage() {
                     <path d="M12 20h16M12 14h16M12 26h10" stroke={DS.primary} strokeWidth="2" strokeLinecap="round"/>
                   </svg>
                 ),
-                eyebrow: "Parcours",
-                title: "Des ressources choisies, pas une liste infinie",
-                desc: "Articles et vidéos sélectionnés pour leur utilité concrète. Tu lis, tu regardes, tu coches — et tu passes à la suite.",
+                eyebrow: "Le programme",
+                title: "Des cours courts, choisis pour toi",
+                desc: "Articles et vidéos sélectionnés pour leur utilité concrète, organisés en missions progressives. Tu lis, tu regardes, tu coches — et tu passes à la suite.",
               },
               {
                 icon: (
@@ -304,9 +282,9 @@ export default function AcademiePage() {
                     <path d="M28 12l2-2M30 20h2M28 28l2 2" stroke={DS.turquoise} strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 ),
-                eyebrow: "Quiz",
-                title: "Valide tes acquis, pas juste lu",
-                desc: "Chaque mission se termine par un quiz rapide. Tu réponds, tu obtiens un feedback immédiat — et tu sais vraiment si tu as compris.",
+                eyebrow: "L'examen (le fun en plus)",
+                title: "Un quiz valide chaque mission",
+                desc: "Pas de contrôle surprise : un quiz rapide en fin de mission, avec feedback immédiat et explication. Tu sais vraiment si tu as compris.",
               },
               {
                 icon: (
@@ -315,9 +293,9 @@ export default function AcademiePage() {
                     <path d="M20 10l2.4 7.4H30l-6.2 4.5 2.4 7.4L20 25l-6.2 4.3 2.4-7.4L10 17.4h7.6L20 10z" fill={DS.turquoise} stroke={DS.primary} strokeWidth="1.2" strokeLinejoin="round"/>
                   </svg>
                 ),
-                eyebrow: "Badges & points",
-                title: "La progression que tu mérites, visible",
-                desc: "Badges à débloquer, points accumulés, pourcentage d'avancement — parce que gérer une asso c'est du boulot, et ça mérite d'être reconnu.",
+                eyebrow: "Le diplôme",
+                title: "Des badges qui prouvent tes compétences",
+                desc: "Chaque parcours complété te décroche un badge, comme un diplôme. Points, pourcentages, progression : tout ton travail est reconnu.",
               },
             ].map(f => (
               <div
@@ -358,7 +336,7 @@ export default function AcademiePage() {
         <div className="mx-auto max-w-[1280px]">
           <div className="mb-10 text-center">
             <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: DS.primary, letterSpacing: "0.08em" }}>
-              Choisis ton rôle
+              Les filières de l&apos;Académie
             </p>
             <h2
               className="leading-tight"
@@ -370,13 +348,13 @@ export default function AcademiePage() {
                 letterSpacing: "0.5px",
               }}
             >
-              Quel est ton poste dans l&apos;association ?
+              Choisis ta filière selon ton poste
             </h2>
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
-            <RoleCard role={president} />
-            <RoleCard role={tresorier} />
+            <RoleCard role={president} num="01" />
+            <RoleCard role={tresorier} num="02" />
           </div>
         </div>
       </section>
@@ -387,7 +365,7 @@ export default function AcademiePage() {
           <div className="grid gap-8 md:grid-cols-2 md:items-center">
             <div>
               <p className="mb-3 text-xs font-semibold uppercase tracking-widest" style={{ color: DS.primary, letterSpacing: "0.08em" }}>
-                Gamification
+                Badges & points
               </p>
               <h2
                 className="mb-4 leading-tight"
@@ -474,10 +452,10 @@ export default function AcademiePage() {
             className="mb-4 text-white"
             style={{ fontFamily: "var(--font-heading, Poppins)", fontWeight: 700, fontSize: "clamp(26px, 3vw, 40px)", letterSpacing: "0.5px" }}
           >
-            Prêt à faire briller ton association ?
+            Prêt à faire ta rentrée ?
           </h2>
           <p className="mx-auto mb-8" style={{ color: "rgba(255,255,255,0.65)", maxWidth: "44ch", fontSize: "17px", fontWeight: 300, lineHeight: 1.6 }}>
-            Choisis ton rôle, commence le premier parcours, et décroche ton premier badge — en moins d&apos;une heure.
+            Choisis ta filière, complète ta première mission, et décroche ton premier badge — en moins d&apos;une heure.
           </p>
           <div className="flex flex-wrap justify-center gap-4">
             <Link
@@ -520,7 +498,7 @@ export default function AcademiePage() {
   );
 }
 
-function RoleCard({ role }: { role: RoleConfig }) {
+function RoleCard({ role, num }: { role: RoleConfig; num: string }) {
   const totalPts = getTotalPoints(role);
   const totalMissions = role.parcours.flatMap(p => p.missions).length;
   const totalArticles = role.parcours.flatMap(p => p.missions).flatMap(m => m.articles).length;
@@ -567,6 +545,9 @@ function RoleCard({ role }: { role: RoleConfig }) {
           </span>
         </div>
 
+        <p className="mb-1 text-xs font-semibold uppercase tracking-widest" style={{ color: DS.primary, letterSpacing: "0.08em" }}>
+          Filière {num}
+        </p>
         <h3
           className="mb-1.5 leading-tight"
           style={{ fontFamily: "var(--font-heading, Poppins)", fontWeight: 700, fontSize: "22px", color: DS.textTitle, letterSpacing: "0.3px" }}

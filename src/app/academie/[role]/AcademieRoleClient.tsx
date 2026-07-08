@@ -58,20 +58,6 @@ function saveProgress(p: Progress) {
   }));
 }
 
-function RoleIcon({ icon, size = 28 }: { icon: RoleConfig["icon"]; size?: number }) {
-  if (icon === "president") return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5a3 3 0 0 1 6 0v5M9 10h.01M15 10h.01M9 14h6" />
-    </svg>
-  );
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="5" width="20" height="14" rx="2" />
-      <path d="M2 10h20M7 15h2M12 15h5" />
-    </svg>
-  );
-}
-
 function YouTubeEmbed({ videoId, title }: { videoId: string; title: string }) {
   const [playing, setPlaying] = useState(false);
   const thumb = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
@@ -533,18 +519,30 @@ export default function AcademieRoleClient({ roleId, userEmail }: { roleId: stri
       {/* Hero header */}
       <div style={{ background: headerBg }}>
         <div className="mx-auto" style={{ maxWidth: "1280px", padding: "32px 4% 48px" }}>
-          <Link href="/academie"
-            className="inline-flex items-center gap-1.5 mb-8 text-sm font-medium transition-colors hover:opacity-80"
-            style={{ color: "rgba(255,255,255,0.5)" }}
-          >
-            <ChevronLeft size={16} /> Retour
-          </Link>
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/academie"
+              className="inline-flex items-center gap-1.5 text-sm font-medium transition-colors hover:opacity-80"
+              style={{ color: "rgba(255,255,255,0.5)" }}
+            >
+              <ChevronLeft size={16} /> L&apos;Académie
+            </Link>
+            <div className="flex items-center gap-2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={DS.turquoise} strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 9L12 4 2 9l10 5 10-5z" />
+                <path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5" />
+                <path d="M22 9v5" />
+              </svg>
+              <span className="text-xs font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)", letterSpacing: "0.08em" }}>
+                AssoConnect Académie
+              </span>
+            </div>
+          </div>
 
           <div className="flex items-end justify-between gap-8">
             <div>
-              <div className="mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                <RoleIcon icon={role.icon} size={36} />
-              </div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-widest" style={{ color: DS.turquoise, letterSpacing: "0.08em" }}>
+                Filière
+              </p>
               <h1 style={{
                 fontFamily: "var(--font-heading, Poppins)",
                 fontWeight: 700,
